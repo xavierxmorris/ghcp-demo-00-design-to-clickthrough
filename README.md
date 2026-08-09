@@ -97,6 +97,10 @@ If you re-run either, re-measure it and update `$RunOne` / `$RunTwo` in `go.ps1`
 
 The demo is the pitch; this is the recipe. Four steps, no coding.
 
+> **The exact prompts that built this repo are in [`PROMPTS.md`](./PROMPTS.md)** —
+> verbatim, annotated clause by clause, with a fill-in-the-blanks template for
+> your own BRD.
+
 **1. Write the BRD as you normally would.** Numbered requirements, business rules,
 acceptance criteria. Two things make the output dramatically better:
    - a **brand and visual direction** section pointing at your design system
@@ -153,6 +157,7 @@ Prefer to skip the terminal? Just open the pages in order:
 .
 ├── go.ps1                  the runner — this is the whole demo
 ├── RUN-SHEET.md            presenter run-sheet: beats, script, Q&A
+├── PROMPTS.md              the exact prompts that built this, annotated
 ├── brd/
 │   ├── terravale-field-hazard-report-brd.html       v1.0 — the business asset
 │   └── terravale-field-hazard-report-brd-v1.1.html  v1.1 — adds REQ-009 / BR-06
