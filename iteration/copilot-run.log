@@ -1,0 +1,187 @@
+PROMPT: Copy the prototype folder to a new folder called prototype-v2, then make this change in prototype-v2 only: add a joint account option. When the customer chooses a joint account in the account type dropdown, ask for the second applicants full name and email address, validate them the same way as the first applicant, and show them on the review screen. Keep the existing visual style exactly - reuse assets/screens.css, do not add any framework, library, build step or CDN. Do not modify anything in the original prototype folder.
+● gel-guidance canvas ready — open it to explore the Division 1 audit.
+
+I'll start by exploring the existing prototype folder structure.
+
+● List all files in repo (shell)
+  │ Get-ChildItem -Path . -Recurse -File | Select-Object FullName, Length | Format-Table -AutoSize
+  └ 15 lines…
+
+● Read prototype.css
+  │ prototype\prototype.css
+  └ 188 lines read
+
+● Read index.html
+  │ prototype\index.html
+  └ 163 lines read
+
+● Read app.js
+  │ prototype\app.js
+  └ 206 lines read
+
+Now let me review the shared stylesheet to see which classes I can reuse without adding new styles.
+
+● Read screens.css
+  │ assets\screens.css
+  └ 475 lines read
+
+Reviewed the design system. Now copying the folder and checking the run tooling.
+
+● Read RUN-SHEET.md
+  └ 149 lines read
+
+● Copy prototype to prototype-v2 (shell)
+  │ Copy-Item -Path .\prototype -Destination .\prototype-v2 -Recurse -Force; Get-ChildItem
+  │ .\prototype-v2 | Select-Object Name, Length
+  └ 6 lines…
+
+Copy complete. Checking tooling for visual verification while I plan the edits.
+
+● Check node, python, playwright and gitignore (shell)
+  │ node --version 2>$null; python --version 2>$null; python -c "import playwright, sys;
+  │ print('playwright ok')" 2>$null; Get-Content .\.gitignore
+  └ 14 lines…
+
+Playwright is available for verification. Now making the edits — starting with the markup.
+
+● Edit index.html +2
+  └ prototype-v2\index.html
+
+● Edit index.html +11
+  └ prototype-v2\index.html
+
+Now the CSS — a `[hidden]` override (needed since `.field` sets `display: grid`) and a reveal motion matching the existing easing.
+
+● Edit prototype.css +24
+  └ prototype-v2\prototype.css
+
+Now the JavaScript — shared validation rules so both applicants validate identically.
+
+● Edit app.js +5
+  └ prototype-v2\app.js
+
+● Edit app.js +40 -4
+  └ prototype-v2\app.js
+
+● Edit app.js +4
+  └ prototype-v2\app.js
+
+● Edit app.js +6
+  └ prototype-v2\app.js
+
+● Edit app.js +7 -1
+  └ prototype-v2\app.js
+
+● Edit app.js +4
+  └ prototype-v2\app.js
+
+Now verifying with a headless browser — full flow plus a layout-overflow check.
+
+✗ Create verify.py
+  │ .shots\verify.py
+  └ Parent directory does not exist
+
+● Create .shots dir and check chromium is installed (shell)                                      28s
+  │ New-Item -ItemType Directory -Force -Path .\.shots | Out-Null; python -c "from
+  │ playwright.sync_api import sync_playwright; p=sync_playwright().start(); b=p.chromium.launch();
+  │ print('chromium ok'); b.close(); p.stop()"
+  └ 2 lines…
+
+● Create verify.py +124
+  └ .shots\verify.py
+
+● Run playwright verification of joint account flow (shell)                                       9s
+  │ python .\.shots\verify.py
+  └ 36 lines…
+
+30/30 checks pass. The error state overflows by 10px though — let me look at the actual screens.
+
+● Read 02-details-joint-errors.png
+  │ .shots\02-details-joint-errors.png
+  └ 1 line read
+
+  [Image: Image file at path C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.s
+  hots\02-details-joint-errors.png [image/png] 1280x1200]
+
+● Read 03-review-joint.png
+  │ .shots\03-review-joint.png
+  └ 1 line read
+
+  [Image: Image file at path
+  C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.shots\03-review-joint.png
+  [image/png] 1280x1200]
+
+Confirmed — the last error message is clipped. Adding a state-scoped spacing fix so the joint form fits without changing the single-applicant layout.
+
+● Edit prototype.css +4 -2
+  └ prototype-v2\prototype.css
+
+● Edit app.js +2
+  └ prototype-v2\app.js
+
+● Edit verify.py +1 -2
+  └ .shots\verify.py
+
+● Edit verify.py +2
+  └ .shots\verify.py
+
+● Re-run verification after spacing fix (shell)                                                   7s
+  │ python .\.shots\verify.py
+  └ 37 lines…
+
+● Read 02-details-joint-errors.png
+  │ .shots\02-details-joint-errors.png
+  └ 1 line read
+
+  [Image: Image file at path C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.s
+  hots\02-details-joint-errors.png [image/png] 1280x1200]
+
+Both errors now fit cleanly. Final review of the diff and confirming the original is untouched.
+
+● Read app.js
+  │ prototype-v2\app.js
+  └ L58:130 (72 lines read)
+
+● Check git status and diff stat between folders (shell)
+  │ git --no-pager status --porcelain; Write-Output '--- diff vs original prototype ---'; git
+  │ --no-pager diff --no-index --stat .\prototype .\prototype-v2
+  └ 10 lines…
+
+Original `prototype/` is untouched (the `design/` changes predate this session). Let me simplify one call and run the repo's own pre-flight check.
+
+● Edit app.js +1 -3
+  └ prototype-v2\app.js
+
+● Run repo preflight check (shell)
+  │ .\go.ps1 -Check; Write-Output "exit=$LASTEXITCODE"; Get-ChildItem .\design | Select-Object Name,
+  │ LastWriteTime
+  └ 21 lines…
+
+Note: `design/canvas.*` is being changed concurrently by something else in this shared environment — not by me. Verifying `prototype/` is byte-identical to HEAD, then re-running the suite.
+
+● Confirm original untouched and re-run verification (shell)                                      8s
+  │ git --no-pager diff --stat -- prototype assets; Write-Output "prototype+assets diff lines above
+  │ (empty = untouched)"; python .\.shots\verify.py
+  └ 38 lines…
+
+● Remove scratch verification folder (shell)
+  │ Remove-Item -Recurse -Force .\.shots; git --no-pager status --porcelain
+  └ 5 lines…
+
+Done. `prototype-v2/` created; `prototype/` and `assets/screens.css` are byte-identical to HEAD (the `design/` changes are from another process in this shared environment, not me).
+
+**Changes in `prototype-v2` only:**
+- **index.html** — added `Joint Everyday Account` to the dropdown; two conditional fields (second applicant name + email), hidden and `disabled` by default; two matching review rows.
+- **app.js** — `jointName`/`jointEmail` reuse the *same* `isFullName`/`isEmail` rule functions as the first applicant; selecting/deselecting joint shows-hides, enables-disables, focuses and clears the fields; state, review binding, reset and the `d` autofill all cover them.
+- **prototype.css** — `[hidden]` override (needed because `.field` sets `display:grid`), a reveal animation using the existing easing, and a joint-only gap tightening so all six fields plus error text fit the 844px frame. Single-applicant layout is unchanged (verified at 14px).
+
+No framework, library, build step or CDN; `assets/screens.css` reused unmodified. Verified with headless Chromium: 30/30 checks passed, no JS errors, and the original prototype still works.
+
+
+
+Changes    +237 -12
+AI Credits 242 (9m 14s)
+Tokens     ↑ 2.3m (2.1m cached, 101.2k written) • ↓ 27.3k (11.8k reasoning)
+Resume     copilot --resume=964487c9-a2bb-4d1a-8969-4bc734292d54
+
+=== ELAPSED: 09:34 ===

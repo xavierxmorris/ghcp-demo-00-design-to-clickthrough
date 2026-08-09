@@ -1,15 +1,15 @@
-# Demo 00 — design file → click-through prototype
+# Demo 00 — design handover → click-through prototype → revised prototype
 
 > **Difficulty:** ⭐
 > **Audience:** business analysts, product owners, delivery leads — anyone who is *not* a developer
-> **Length:** 90 seconds
+> **Length:** 1:15 of scripted beats inside a 90-second slot
 > **Prerequisites:** none
 
 ```powershell
 .\go.ps1
 ```
 
-That's it. No install, no server, no Node, no Python, no Figma seat, no network.
+That's it. No install, no server, no Node, no Python, no design-tool licence, no network.
 The pages run straight off the filesystem, so this works on a locked-down laptop
 and on conference wifi that has given up.
 
@@ -30,13 +30,12 @@ mentions a framework, a token, or a line of HTML.
 
 | Beat | Time | What the room sees |
 |---|---|---|
-| **The handover** | 0:00 | A design file with four frames opens. "Click *Get started*." Nothing happens. |
-| **The ask** | 0:20 | One plain-English sentence. No ticket, no sprint, no developer. |
-| **The build** | 0:35 | Three files. It reused the existing design system. |
-| **The pay-off** | 0:45 | The same four screens — now clickable, with validation and memory. |
-| **The iteration** | 1:15 | A stakeholder change request becomes another sentence. |
+| **The handover** | 0:00 | A design handover with four frames opens. "Click *Get started*." Nothing happens. |
+| **The ask** | 0:15 | One plain-English sentence. No ticket, no sprint, nobody writing code. |
+| **The prototype** | 0:27 | The same four screens — now clickable, with validation and memory. |
+| **The iteration** | 0:53 | A real change request that Copilot really executed, and the changed prototype opened beside it. |
 
-The demo hinges on the silence at 0:10, when someone tries to click a button on a
+The demo hinges on the silence at 0:08, when someone tries to click a button on a
 picture and nothing happens.
 
 ### Why it lands with a business audience
@@ -45,11 +44,30 @@ picture and nothing happens.
   member* typed — not a placeholder. A design file physically cannot do that.
 - **It says no.** Leave the email blank and it stops you, in red. Skip the consent
   tick and it blocks you.
-- **"It reused our design system" is literally true.** The design canvas and the
-  working prototype share one stylesheet, [`assets/screens.css`](./assets/screens.css).
-  The frames are the same pixels as the screens, not a redraw.
+- **The change is real, and you can audit it.** `prototype-v2/` was genuinely
+  produced by Copilot from the change request — the full session transcript is in
+  [`iteration/copilot-run.log`](./iteration/copilot-run.log). Nothing in the
+  script pretends to generate code.
 - **It closes on the handoff**, not on a limitation: this is a real repo, so the
   dev team starts from something the business has already clicked through.
+
+### The measured iteration
+
+The change request was:
+
+> "Add a joint account option. When the customer chooses a joint account, ask for
+> the second applicant's name and email, validate them the same way, and show them
+> on the review screen."
+
+| | |
+|---|---|
+| Captured | 9 August 2026 |
+| Wall clock | 9 min 34 sec |
+| Changed | 3 files, +105 / −5 lines |
+| Verified | 30 / 30 of Copilot's own browser checks |
+| Transcript | [`iteration/copilot-run.log`](./iteration/copilot-run.log) |
+
+Quote those numbers, not rounder ones. If you re-run it, re-measure it.
 
 ---
 
@@ -61,15 +79,16 @@ picture and nothing happens.
 | `.\go.ps1 -Manual` | **Presenting live.** Enter advances each beat, so questions can't run down the clock. |
 | `.\go.ps1 -Check` | Pre-flight before you walk on stage. Exits 0/1, CI-safe. |
 | `.\go.ps1 -NoBrowser` | Rehearsing the words without opening windows. |
-| `.\go.ps1 -Live` | Workshop mode — Copilot really rebuilds the prototype into `prototype-live\`. Minutes, not seconds. Your known-good copy is never touched. |
+| `.\go.ps1 -Live` | Workshop mode — Copilot really re-runs the change request into `prototype-live\`. Took ~10 minutes when captured. `prototype\` and `prototype-v2\` are never touched. |
 
 Full presenter script, including what to say and how to answer the awkward
 questions: **[`RUN-SHEET.md`](./RUN-SHEET.md)**.
 
-Prefer to skip the terminal? Just open the two pages side by side:
+Prefer to skip the terminal? Just open the three pages in order:
 
-- `design/canvas.html` — the before
-- `prototype/index.html` — the after
+- `design/canvas.html` — the handover
+- `prototype/index.html` — v1, working
+- `prototype-v2/index.html` — v2, after the change request
 
 ---
 
@@ -80,14 +99,20 @@ Prefer to skip the terminal? Just open the two pages side by side:
 ├── go.ps1                  the runner — this is the whole demo
 ├── RUN-SHEET.md            presenter run-sheet: beats, script, Q&A
 ├── assets/
-│   └── screens.css         ONE design system, shared by both sides
+│   └── screens.css         ONE design system, shared by the handover and v1
 ├── design/
 │   ├── canvas.html         the "before": four static frames, inert on purpose
-│   └── canvas.css          design-tool chrome
-└── prototype/
-    ├── index.html          the "after": same four screens, wired up
-    ├── prototype.css       routing, validation, device shell
-    └── app.js              plain browser JavaScript, no framework
+│   └── canvas.css          unbranded design-handover chrome
+├── prototype/              v1 — the same four screens, wired up
+│   ├── index.html
+│   ├── prototype.css
+│   └── app.js
+├── prototype-v2/           v2 — Copilot's answer to the change request
+│   ├── index.html
+│   ├── prototype.css
+│   └── app.js
+└── iteration/
+    └── copilot-run.log     the real session transcript — the evidence
 ```
 
 ---
@@ -96,16 +121,30 @@ Prefer to skip the terminal? Just open the two pages side by side:
 
 Worth being straight about these if anyone asks — the demo is stronger for it.
 
-- **The prototype is pre-built** so the 90 seconds is reliable. It was generated
-  by Copilot from the design frames, and `.\go.ps1 -Live` regenerates it in front
-  of you. That takes minutes, which is why it's a workshop exercise rather than a
-  keynote one.
-- **The design canvas is a stand-in for a design tool**, not a screenshot of one
-  and not a live Figma connection. It's built from the same stylesheet as the
-  prototype, which is exactly why the two sides match so precisely. Nothing here
-  touches the Figma API, consumes a seat, or needs a licence.
+- **The v1 prototype is pre-built** so the run is reliable. It was generated by
+  Copilot from the design frames.
+- **The v2 prototype is the proof.** It was genuinely produced by Copilot from
+  the joint-account change request, in a single run, and the whole session
+  transcript is committed at [`iteration/copilot-run.log`](./iteration/copilot-run.log).
+  If someone doubts the claim, open the log.
+- **The script never fakes generation.** It opens pages and prints presenter
+  cues. It does not print invented progress, invented file writes or invented
+  timings. Every number it shows was measured.
+- **The design handover is a stand-in for a design tool**, not a screenshot of
+  one and not a live connection to one. It is deliberately unbranded and imitates
+  no specific product. It shares [`assets/screens.css`](./assets/screens.css) with
+  the prototype, which is exactly why the two sides match so precisely — say so if
+  asked, because it means the demo shows *iteration*, not design-file parsing. If
+  you want to show a genuine design-tool import, use your own file and your own
+  tooling; nothing here depends on it.
+- **"Without a developer" means without writing code.** Someone still had to
+  clone a repo and run a script. The defensible claim is: *the analyst created
+  and revised a working prototype without writing code.*
 - **This is prototype code, not production code.** That's the point. It's the
   starting artefact for a delivery team, not the finished product.
+- **`file://` is not a shareable link.** If you want to actually send it round,
+  publish the static files to an approved host first. Don't promise a link the
+  demo can't produce.
 - **No data goes anywhere.** Everything stays in the browser. Nothing is
   submitted, nothing is stored, there is no backend.
 - **Aurora is fictional.** The brand, the product, the numbers and

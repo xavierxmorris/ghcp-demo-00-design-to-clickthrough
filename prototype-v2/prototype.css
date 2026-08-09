@@ -1,0 +1,214 @@
+/* ============================================================================
+   Click-through prototype shell.
+   Everything the design file could not do: routing, state, validation, memory.
+   ========================================================================= */
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 26px 20px;
+  background:
+    radial-gradient(760px 520px at 18% 8%,  rgba(110, 86, 248, .30), transparent 62%),
+    radial-gradient(700px 520px at 84% 92%, rgba(67, 229, 196, .22), transparent 60%),
+    radial-gradient(620px 460px at 88% 12%, rgba(47, 182, 255, .20), transparent 58%),
+    #070a14;
+  color: #eef2f9;
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --------------------------------------------------------------- header -- */
+
+.stage-head {
+  flex: 0 0 auto;
+  text-align: center;
+  max-width: 640px;
+}
+.stage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  background: rgba(255, 255, 255, .06);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .3px;
+}
+.stage-badge .live {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #43e5c4;
+  box-shadow: 0 0 0 3px rgba(67, 229, 196, .22);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 50% { opacity: .35; } }
+
+.stage-head h1 {
+  margin: 12px 0 0;
+  font-size: 25px;
+  line-height: 1.2;
+  letter-spacing: -.7px;
+  font-weight: 700;
+}
+.stage-head p {
+  margin: 7px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(238, 242, 249, .62);
+}
+
+/* --------------------------------------------------------------- device -- */
+
+.device {
+  flex: 0 0 auto;
+  padding: 11px;
+  border-radius: 38px;
+  background: linear-gradient(160deg, #23283a, #0b1020);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, .09),
+    0 34px 80px rgba(0, 0, 0, .6);
+}
+.device .frame { border-radius: var(--radius-lg); }
+
+/* --------------------------------------------------------------- router -- */
+
+.screen { display: none; }
+.screen.is-active {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  animation: screen-in .34s cubic-bezier(.22, .8, .3, 1) both;
+}
+@keyframes screen-in {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: none; }
+}
+.screen.is-back { animation-name: screen-in-back; }
+@keyframes screen-in-back {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Interactive affordances the static frames never had. */
+.btn { transition: transform .12s ease, box-shadow .2s ease, filter .2s ease; }
+.btn:hover  { filter: brightness(1.05); }
+.btn:active { transform: scale(.978); }
+.btn:disabled { opacity: .45; cursor: not-allowed; filter: none; transform: none; }
+.nav-back { cursor: pointer; transition: background .15s ease; }
+.nav-back:hover { background: var(--surface-sunken); }
+
+.field input:focus,
+.field select:focus {
+  outline: none;
+  border-color: var(--brand-500);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(110, 86, 248, .16);
+}
+
+/* ------------------------------------------------------------ validation -- */
+
+.field.has-error input,
+.field.has-error select { border-color: var(--danger); background: rgba(216, 48, 90, .05); }
+.field-error {
+  display: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--danger);
+}
+.field.has-error .field-error { display: block; }
+
+.consent.has-error { border-color: var(--danger); }
+
+/* --------------------------------------------------- conditional fields -- */
+
+/* `.field` and `.summary .item` set an explicit `display`, which outranks the
+   user-agent rule for [hidden]. Restore it so the attribute alone can hide. */
+[hidden] { display: none !important; }
+
+/* Revealed when the account type is a joint account. */
+.joint-field { animation: field-in .28s cubic-bezier(.22, .8, .3, 1) both; }
+@keyframes field-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Two extra fields can outgrow the fixed phone frame once error messages are
+   showing. Tighten the stack a little in joint mode only — the single-applicant
+   layout keeps its original spacing — and scroll rather than clip if it still
+   runs long. No visible scrollbar, the same as a real mobile browser. */
+.field-stack {
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior: contain;
+}
+.field-stack::-webkit-scrollbar { width: 0; height: 0; }
+.field-stack.is-joint { gap: 11px; }
+
+/* ---------------------------------------------------------------- toast -- */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  transform: translate(-50%, 20px);
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: #0b1020;
+  border: 1px solid rgba(255, 255, 255, .16);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s ease, transform .22s ease;
+  z-index: 20;
+}
+.toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+
+/* --------------------------------------------------------------- footer -- */
+
+.stage-foot {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+  color: rgba(238, 242, 249, .55);
+}
+.stage-foot button {
+  padding: 8px 15px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  background: rgba(255, 255, 255, .06);
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.stage-foot button:hover { background: rgba(255, 255, 255, .12); }
+
+/* Short laptop screens: shrink the phone rather than clip it. `transform` does
+   not change layout size, so each step also pulls back the leftover box. */
+@media (max-height: 1100px) {
+  body { gap: 14px; padding: 14px; }
+  .stage-head h1 { font-size: 21px; }
+  .stage-head p { display: none; }
+  .device { transform: scale(.86); transform-origin: center; margin: -61px 0; }
+}
+@media (max-height: 900px) {
+  .device { transform: scale(.74); margin: -113px 0; }
+}
+@media (max-height: 780px) {
+  .stage-head h1 { display: none; }
+  .device { transform: scale(.62); margin: -165px 0; }
+}
