@@ -1,349 +1,589 @@
 /* ============================================================================
-   Aurora — click-through prototype
-   Page chrome ONLY. Every pixel inside the phone comes from
-   ../assets/screens.css, which is used exactly as handed over and is not
-   modified or overridden here. This file adds: the stage the phone sits on,
-   screen switching, validation states, and the BRD traceability strip.
-   No build step, no CDN, no framework. Runs from file://.
+   Terravale Field — hazard reporting prototype (BRD-2026-031 v1.1)
+
+   This file ONLY layers what the shared design system does not provide:
+   the page shell around the phone, screen switching, validation states,
+   the requirement-trace overlay and the trace strip.
+
+   assets/screens.css is linked first and is used unmodified. Everything here
+   is expressed in that file's own custom properties so the two stay in step.
    ========================================================================= */
 
-:root {
-  --fit: 1;                       /* set by app.js so the 390x844 frame always fits */
-  --stage-ink: #e8ecf9;
-  --stage-dim: #98a3c4;
-}
+/* ------------------------------------------------------------- page shell -- */
 
-html { height: 100%; }
+html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
-  min-height: 100%;
-  background:
-    radial-gradient(1100px 640px at 50% -12%, rgba(110, 86, 248, .34), transparent 62%),
-    radial-gradient(900px 560px at 88% 10%, rgba(47, 182, 255, .20), transparent 60%),
-    radial-gradient(820px 520px at 6% 92%, rgba(67, 229, 196, .16), transparent 62%),
-    #070a16;
-  background-attachment: fixed;
-  color: var(--stage-ink);
+  min-height: 100vh;
   font-family: var(--font-display);
+  color: #e9eef6;
+  background:
+    radial-gradient(900px 620px at 50% -12%, rgba(200, 68, 42, .30), transparent 62%),
+    radial-gradient(760px 520px at 88% 108%, rgba(240, 162, 46, .18), transparent 60%),
+    #0b1219;
   -webkit-font-smoothing: antialiased;
 }
 
 .stage {
   min-height: 100vh;
-  padding: 26px 24px 34px;
+  padding: 26px 16px 34px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  gap: 16px;
 }
 
-/* --------------------------------------------------------------- header -- */
-
-.stage-head { text-align: center; }
-.stage-title {
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: -.2px;
-}
-.stage-sub {
-  margin-top: 3px;
-  font-size: 12px;
-  color: var(--stage-dim);
-}
-.stage-badge {
-  display: inline-block;
-  margin-top: 9px;
-  padding: 4px 11px;
-  border-radius: 999px;
-  border: 1px solid rgba(67, 229, 196, .34);
-  background: rgba(67, 229, 196, .10);
-  color: var(--mint-400);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .5px;
-}
-
-/* --------------------------------------------------------------- device -- */
-
-/* The wrapper reserves the scaled footprint so nothing jumps when --fit changes. */
-.device-wrap {
-  flex: 0 0 auto;
-  width: calc(var(--frame-w) * var(--fit));
-  height: calc(var(--frame-h) * var(--fit));
-}
+/* the handset itself — 390 x 844, exactly as the design system declares it */
 .device {
-  position: relative;
-  width: var(--frame-w);
-  height: var(--frame-h);
-  border-radius: 46px;
-  overflow: hidden;
-  background: var(--surface);
-  transform: scale(var(--fit));
-  transform-origin: top left;
+  flex: 0 0 auto;
+  width: calc(var(--frame-w) + 20px);
+  padding: 10px;
+  border-radius: 54px;
+  background: linear-gradient(160deg, #24313f 0%, #0d1620 58%, #05090d 100%);
   box-shadow:
-    0 0 0 11px #0b0f20,
-    0 0 0 12px rgba(255, 255, 255, .12),
-    0 30px 70px -16px rgba(4, 7, 18, .8);
+    0 0 0 1px rgba(255, 255, 255, .07),
+    0 34px 70px rgba(0, 0, 0, .55),
+    0 6px 18px rgba(0, 0, 0, .40);
 }
+.device .frame { border-radius: 44px; }   /* cosmetic only — bezel corners */
 
-/* ------------------------------------------------------- screen swapping -- */
+.status-right { display: flex; align-items: center; gap: 8px; }
 
-.screen[hidden] { display: none; }      /* beats .frame's display:flex */
-.screen.is-active { animation: screen-in .30s cubic-bezier(.4, 0, .2, 1) both; }
-@keyframes screen-in {
-  from { opacity: 0; transform: translateY(9px); }
-  to   { opacity: 1; transform: none; }
-}
-[data-focus]:focus { outline: none; }
+/* ------------------------------------------------------ screen switching -- */
 
-/* Keyboard focus that is visible but never fights the design system. */
-.frame :is(button, input, select):focus-visible {
-  outline: 2px solid var(--brand-500);
-  outline-offset: 2px;
-}
-
-/* The form owns the remaining frame height so .frame-actions still pins low. */
-.form-flow {
+.screen { display: none; }
+.screen.is-active {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
+  animation: screen-in .26s cubic-bezier(.4, 0, .2, 1) both;
 }
+@keyframes screen-in {
+  from { opacity: 0; transform: translateY(7px); }
+  to   { opacity: 1; transform: none; }
+}
+.screen .h2:focus,
+.screen .display:focus { outline: none; }
 
-/* ---------------------------------------------- validation — REQ-004 ----- */
+/* ---------------------------------------- sunlight + gloves adjustments --- */
+/* Same palette, stronger legibility: secondary text moves off --ink-400
+   (~3.4:1 on white) and onto --ink-500 (~6.2:1), which clears WCAG AA.     */
 
-.field-error {
+.meta,
+.field .hint,
+.step-count,
+.summary dt,
+.hero-card .label,
+.account-chip .label { color: var(--ink-500); }
+
+.consent { font-size: 14px; color: var(--ink-700); cursor: pointer; }
+.consent input { width: 26px; height: 26px; cursor: pointer; }
+
+.value-list li { font-size: 14.5px; }
+
+/* every interactive control gets a visible, high-contrast focus ring */
+:where(button, input, select, a, label.consent):focus-visible {
+  outline: 3px solid var(--brand-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.trace :where(button, input, label):focus-visible { outline-color: var(--amber-400); }
+
+/* enlarge the hit area of small controls without changing how they look */
+.nav-back { position: relative; cursor: pointer; }
+.nav-back::before { content: ""; position: absolute; inset: -7px; border-radius: 50%; }
+
+.btn:active { transform: translateY(1px); }
+
+/* ------------------------------------------------------------- screen 1 --- */
+
+.intro-head { flex: 0 0 auto; }
+.intro-head .eyebrow { margin-top: 20px; }
+.intro-head .lede { margin-top: 10px; }
+
+.hero-card .amount { font-variant-numeric: normal; }
+.hero-card .label { white-space: nowrap; }
+
+.note-br {
   margin: 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--ink-500);
+}
+
+/* ------------------------------------------------------- screen 2, form --- */
+
+.field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.field-head label { margin: 0; }
+
+.chip-action {
+  position: relative;
+  height: 30px;
+  padding: 0 13px;
+  border: 1.5px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--brand-600);
+  font: inherit;
   font-size: 12px;
-  line-height: 1.35;
-  font-weight: 600;
-  color: var(--danger);
+  font-weight: 700;
+  letter-spacing: .3px;
+  cursor: pointer;
 }
-.field-error::before {
-  content: "!";
-  display: inline-grid;
-  place-items: center;
-  width: 14px;
-  height: 14px;
-  margin-right: 6px;
-  border-radius: 50%;
-  background: var(--danger);
-  color: #fff;
-  font-size: 10px;
-  font-weight: 800;
-  vertical-align: -2px;
+.chip-action::before { content: ""; position: absolute; inset: -9px; }
+.chip-action:hover { border-color: var(--brand-300); }
+
+/* the form scrolls inside the handset once error messages appear */
+#hazard-form,
+#risk-form {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding-right: 2px;
+  scroll-padding: 12px 0;
 }
-.field-error-block { margin-top: 8px; }
+
+.field input::placeholder { color: var(--ink-400); }
+.field input:hover,
+.field select:hover { border-color: var(--ink-200); }
+.field input:focus,
+.field select:focus { border-color: var(--brand-500); background: var(--surface); }
+
+/* ------------------------------------------------- validation (REQ-004) --- */
 
 .field.is-invalid input,
 .field.is-invalid select {
   border-color: var(--danger);
-  background: rgba(216, 48, 90, .05);
+  background: #fff4f7;
 }
-.field.is-invalid label { color: var(--danger); }
-.field.is-invalid input:focus-visible,
-.field.is-invalid select:focus-visible { outline-color: var(--danger); }
-.consent.is-invalid { border-color: var(--danger); }
+/* the specific error replaces the generic hint, rather than stacking under it */
+.field.is-invalid .hint { display: none; }
 
-.is-shake { animation: shake .32s cubic-bezier(.36, .07, .19, .97) both; }
-@keyframes shake {
-  10%, 90% { transform: translateX(-1.5px); }
-  20%, 80% { transform: translateX(3px); }
-  30%, 50%, 70% { transform: translateX(-4px); }
-  40%, 60% { transform: translateX(4px); }
+.field-error {
+  display: none;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 700;
+  color: var(--danger);
 }
+.field-error::before { content: "▲ "; font-size: 10px; }
+.field.is-invalid .field-error,
+.field-error.is-shown { display: block; }
 
-/* --------------------------------- second applicant — REQ-009 / BR-06 ---- */
+#e-declare { margin-top: 8px; }
 
-/* Revealed only while a joint account is selected. It sits inside
-   .field-stack and reuses that grid's rhythm and the design system's own
-   field styling, so the screen keeps the spacing it was handed over with. */
-.joint-group { display: grid; gap: 14px; }
-.joint-group[hidden] { display: none; }     /* beats the grid above */
-
-/* Two more fields do not fit the handed-over 844px frame, so while the second
-   applicant is on screen the stack scrolls — the way a real mobile form does.
-   Scrollbars stay hidden, as they are on a phone; the soft edge below shows
-   there is more. Applied only in the joint case, so every other screen keeps
-   exactly the layout it was handed over with. */
-.field-stack.is-scrollable {
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-.field-stack.is-scrollable::-webkit-scrollbar { width: 0; height: 0; }
-
-.field-stack.has-below:not(.has-above) {
-  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 34px), transparent 100%);
-          mask-image: linear-gradient(to bottom, #000 calc(100% - 34px), transparent 100%);
-}
-.field-stack.has-above:not(.has-below) {
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 26px);
-          mask-image: linear-gradient(to bottom, transparent 0, #000 26px);
-}
-.field-stack.has-above.has-below {
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 26px,
-                                      #000 calc(100% - 34px), transparent 100%);
-          mask-image: linear-gradient(to bottom, transparent 0, #000 26px,
-                                      #000 calc(100% - 34px), transparent 100%);
-}
-
-.group-label {
+.alert {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 0;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--danger);
+  border-radius: var(--radius-sm);
+  background: #fff4f7;
+  color: var(--danger);
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.alert[hidden] { display: none; }
+.alert-icon {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--danger);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* ------------------------------------------------- screen 3, risk (REQ-009) */
+/* Chosen over a dropdown deliberately: three standing targets, each 64px tall,
+   are usable in gloves. The colour bar carries the rating a second way so it
+   still reads at a glance in direct sunlight.                                */
+
+.field-risk .risk-label {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: .5px;
   text-transform: uppercase;
-  color: var(--brand-500);
-}
-.group-label::after {
-  content: "";
-  flex: 1 1 auto;
-  height: 1px;
-  background: var(--hairline);
+  color: var(--ink-500);
 }
 
-/* REQ-009 — the review rows for the second applicant are dropped entirely
-   when the account is not joint, so "Account" stays the last visible row. */
-.summary .item[hidden] { display: none; }   /* beats .summary .item's flex */
+.risk-options { display: grid; gap: 11px; }
 
-/* ------------------------------------------------- small print — BR-05 --- */
-
-.legal {
-  margin: 2px 0 0;
-  font-size: 11px;
-  line-height: 1.35;
-  text-align: center;
-  color: var(--ink-400);
-}
-
-/* ----------------------------------------------------------------- toast -- */
-
-.toast {
-  position: absolute;
-  left: 26px;
-  right: 26px;
-  bottom: 200px;                 /* clear of the pinned actions below */
-  margin: 0;
-  padding: 12px 14px;
-  border-radius: var(--radius-sm);
-  background: var(--ink-900);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  text-align: center;
-  pointer-events: none;
-  box-shadow: 0 10px 26px rgba(11, 16, 32, .35);
-  animation: toast-in .26s ease both;
-}
-.toast[hidden] { display: none; }
-@keyframes toast-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: none; }
-}
-
-/* --------------------------------------------- traceability — the BRD ---- */
-
-.trace {
-  width: min(560px, 100%);
-  text-align: center;
-  font-size: 12px;
-  color: var(--stage-dim);
-}
-.trace-line { letter-spacing: .2px; }
-.trace-line b { color: var(--stage-ink); }
-.trace-name::before { content: "·"; margin: 0 6px; opacity: .6; }
-
-.trace-refs {
+.field-risk .risk-option {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 9px;
-}
-.trace-refs .ref {
-  padding: 3px 9px;
-  border-radius: 999px;
-  border: 1px solid rgba(169, 155, 255, .32);
-  background: rgba(110, 86, 248, .16);
-  color: #cdc4ff;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .4px;
-  font-variant-numeric: tabular-nums;
-}
-.trace-refs .ref.is-rule {
-  border-color: rgba(47, 182, 255, .32);
-  background: rgba(47, 182, 255, .14);
-  color: #a9dcff;
-}
-
-.trace-toggle {
-  display: inline-flex;
   align-items: center;
-  gap: 7px;
-  margin-top: 11px;
-  font-size: 11.5px;
-  color: var(--stage-dim);
+  gap: 13px;
+  min-height: 74px;
+  padding: 13px 15px;
+  border: 1.5px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  cursor: pointer;
+  /* undo the uppercase field-label treatment inherited from the design system */
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--ink-900);
+  margin: 0;
+}
+.field-risk .risk-option:hover { border-color: var(--ink-200); }
+
+.risk-bar {
+  flex: 0 0 auto;
+  align-self: stretch;
+  width: 6px;
+  border-radius: 999px;
+  background: var(--ink-200);
+}
+.risk-option[data-level="Low"] .risk-bar            { background: var(--success); }
+.risk-option[data-level="Moderate"] .risk-bar       { background: var(--ochre-400); }
+.risk-option[data-level="High potential"] .risk-bar { background: var(--brand-500); }
+
+.field-risk input[type="radio"] {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  margin: 0;
+  border: 2px solid var(--ink-400);
+  border-radius: 50%;
+  background: var(--surface);
   cursor: pointer;
 }
-.trace-toggle input {
-  width: 14px;
-  height: 14px;
-  accent-color: var(--brand-500);
+.field-risk input[type="radio"]:checked {
+  border-color: var(--brand-500);
+  background: var(--brand-500);
+  box-shadow: inset 0 0 0 4px var(--surface);
 }
 
-/* Opt-in overlay: label the elements that carry a BRD reference. */
-body.trace-on [data-rule] {
-  position: relative;
-  outline: 1px dashed rgba(110, 86, 248, .55);
-  outline-offset: 3px;
+.risk-text { display: grid; gap: 3px; }
+.risk-name { font-size: 17px; font-weight: 700; line-height: 1.2; color: var(--ink-900); }
+.risk-note { font-size: 13px; font-weight: 500; line-height: 1.32; color: var(--ink-500); }
+
+.field-risk .risk-option.is-selected {
+  border-color: var(--brand-500);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1.5px var(--brand-500);
 }
-body.trace-on [data-rule]::after {
-  content: attr(data-rule);
+
+/* REQ-004 / REQ-009: a missing rating is refused like any other field */
+.field-risk.is-invalid .risk-option {
+  border-color: var(--danger);
+  background: #fff4f7;
+}
+.field-risk.is-invalid input[type="radio"] {
+  border-color: var(--danger);
+  background: var(--surface);
+}
+
+/* ------------------------------------- BR-06: the escalation block --------- */
+/* Present only while the rating is High potential. Hidden outright otherwise,
+   so supervisor details are never requested for a lesser rating (REQ-009).   */
+
+.escalation {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1.5px solid rgba(224, 116, 44, .55);
+  border-radius: var(--radius-sm);
+  background: rgba(240, 162, 46, .10);
+}
+.escalation[hidden] { display: none; }
+
+.escalation-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink-700);
+}
+.escalation-flag {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--brand-600);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+/* white sits better than the sunken grey on the tinted panel — the invalid
+   state is restated so it still wins when a field is refused */
+.escalation .field input { background: var(--surface); }
+.escalation .field.is-invalid input {
+  border-color: var(--danger);
+  background: #fff4f7;
+}
+
+/* ------------------------------------------------------- screen 4, review -- */
+
+.review-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+/* REQ-009: the rating is restated as a pill so High potential is unmissable */
+.risk-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+.risk-pill[data-level="Low"] {
+  background: rgba(15, 157, 110, .14);
+  border: 1px solid rgba(15, 157, 110, .5);
+  color: #0a6d4b;
+}
+.risk-pill[data-level="Moderate"] {
+  background: rgba(224, 116, 44, .16);
+  border: 1px solid rgba(224, 116, 44, .55);
+  color: #8c4409;
+}
+.risk-pill[data-level="High potential"] {
+  background: var(--brand-500);
+  border: 1px solid var(--brand-600);
+  color: #fff;
+}
+
+.escalation-summary[hidden] { display: none; }
+.escalation-summary .summary { margin-top: 6px; }
+.review-caption {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 14px 0 0;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--brand-600);
+}
+.review-caption::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--brand-500);
+}
+
+/* An escalated report carries two more rows than the frame has room for, so
+   the review scrolls. The fade only appears while something is still below,
+   so the declaration in REQ-006 never looks like the end of the screen. */
+.review-scroll.has-more {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 38px), rgba(0, 0, 0, .12) 100%);
+          mask-image: linear-gradient(to bottom, #000 calc(100% - 38px), rgba(0, 0, 0, .12) 100%);
+}
+
+.consent.is-invalid {
+  border-color: var(--danger);
+  background: #fff4f7;
+}
+@keyframes nudge {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-5px); }
+  75%      { transform: translateX(5px); }
+}
+.consent.is-invalid { animation: nudge .26s ease-in-out 1; }
+
+/* BR-04: submission is refused until the declaration is confirmed. The control
+   stays operable so it can explain why, which is what REQ-004 asks for. */
+.btn.is-blocked {
+  background: var(--ink-200);
+  color: var(--ink-500);
+  box-shadow: none;
+}
+
+/* -------------------------------------------------------- screen 5, done -- */
+
+.notify-status {
+  margin: 14px 0 0;
+  min-height: 19px;
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--success);
+}
+.done-body .note-br { margin-top: 12px; }
+.done-body .lede { margin-top: 8px; }
+
+/* --------------------------------- requirement labels on the screen ------- */
+/* Toggled from the trace strip. Purely an overlay: absolutely positioned so
+   nothing in the journey moves when it is switched on.                      */
+
+body.show-refs [data-ref] {
+  position: relative;
+  outline: 1.5px dashed rgba(200, 68, 42, .5);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+body.show-refs [data-ref]::after {
+  content: attr(data-ref);
   position: absolute;
   top: -8px;
   right: 0;
-  z-index: 2;
-  padding: 1px 5px;
-  border-radius: 4px;
-  background: var(--brand-500);
+  z-index: 8;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--brand-600);
   color: #fff;
-  font-size: 9px;
+  font-family: var(--font-display);
+  font-size: 9.5px;
+  font-weight: 800;
+  line-height: 1.5;
+  letter-spacing: .5px;
+  text-transform: none;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 6px rgba(20, 32, 43, .28);
+}
+body.show-refs .note-br[data-ref]::after { right: auto; left: 0; top: auto; bottom: -9px; }
+body.show-refs .step-count[data-ref]::after {
+  top: 50%;
+  bottom: auto;
+  right: calc(100% + 7px);
+  transform: translateY(-50%);
+}
+body.show-refs .eyebrow[data-ref]::after { top: -10px; }
+body.show-refs .field[data-ref] { outline-offset: 2px; }
+body.show-refs .field[data-ref]::after { top: -14px; }
+
+/* Some design system components clip their own overflow (.summary rounds its
+   corners that way). While the overlay is on, let the label escape - the
+   component keeps every other property it was given. */
+body.show-refs .summary[data-ref] { overflow: visible; }
+body.show-refs #hazard-form,
+body.show-refs #risk-form { padding-top: 16px; }
+
+/* ------------------------------------------------------------ trace strip -- */
+
+.trace {
+  flex: 0 0 auto;
+  width: calc(var(--frame-w) + 20px);
+  max-width: 100%;
+  padding: 13px 15px 11px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, .055);
+  border: 1px solid rgba(255, 255, 255, .16);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .32);
+  backdrop-filter: blur(6px);
+}
+
+.trace-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.trace-eyebrow {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--amber-400);
+}
+.trace-screen {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.trace-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  min-height: 26px;
+}
+.trace-chip {
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
   font-weight: 800;
   letter-spacing: .5px;
-  line-height: 1.5;
-  pointer-events: none;
-}
-body.trace-on .field-error[hidden] { display: none; }
-
-/* ----------------------------------------------------------------- misc -- */
-
-.sr-only {
-  position: absolute;
-  width: 1px; height: 1px;
-  margin: -1px; padding: 0;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  border: 0;
 }
+.trace-chip.is-req {
+  background: var(--terra);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(200, 68, 42, .35);
+}
+.trace-chip.is-br {
+  background: rgba(240, 162, 46, .16);
+  border: 1px solid rgba(240, 162, 46, .55);
+  color: #f6c76e;
+}
+
+.trace-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 11px;
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .12);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #e9eef6;
+  cursor: pointer;
+  min-height: 46px;
+}
+.trace-toggle:hover { background: rgba(255, 255, 255, .09); }
+.trace-toggle input {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  accent-color: var(--amber-400);
+  cursor: pointer;
+}
+
+.trace-doc {
+  margin: 9px 2px 0;
+  font-size: 11px;
+  letter-spacing: .2px;
+  color: rgba(233, 238, 246, .62);
+}
+
+/* ------------------------------------------------------------ preferences -- */
 
 @media (prefers-reduced-motion: reduce) {
-  .screen.is-active,
-  .is-shake,
-  .toast { animation: none; }
-  .progress span { transition: none; }
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
 }
 
-/* Pre-JS fallbacks so the frame is never clipped before app.js sets --fit. */
-@media (max-height: 1020px) { :root { --fit: .88; } }
-@media (max-height: 900px)  { :root { --fit: .78; } }
-@media (max-height: 800px)  { :root { --fit: .68; } }
+@media (max-height: 1000px) {
+  .stage { justify-content: flex-start; }
+}

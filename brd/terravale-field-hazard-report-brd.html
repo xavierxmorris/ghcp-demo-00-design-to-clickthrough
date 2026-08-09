@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BRD-2026-014 v1.1 — Aurora Everyday Account, digital origination</title>
-<meta name="description" content="Business Requirements Document: online everyday account origination.">
+<title>BRD-2026-031 — Terravale Field: hazard and safety observation reporting</title>
+<meta name="description" content="Business Requirements Document: mobile hazard and safety observation reporting for site personnel.">
 <style>
   /* Deliberately self-contained. This document shares NO stylesheet, tokens or
      markup with the prototype - it is an independent business input. */
@@ -13,7 +13,7 @@
     --muted: #5b6270;
     --rule: #d6dae2;
     --band: #f2f4f8;
-    --accent: #1f4fd8;
+    --accent: #9c3419;
     --page: 210mm;
   }
   * { box-sizing: border-box; }
@@ -133,17 +133,6 @@
     body { background: #fff; padding: 0; }
     .page { box-shadow: none; width: auto; padding: 0; }
   }
-
-  /* Revision 1.1 marking */
-  .revision {
-    margin: 9px 0 0;
-    padding: 6px 10px;
-    background: #fff6e6;
-    border-left: 3px solid #d08700;
-    font-size: 8.8pt;
-  }
-  .chg-key { color: #d08700; font-weight: 700; }
-  tr.changed td { background: #fff9ee; box-shadow: inset 3px 0 0 #d08700; }
 </style>
 </head>
 <body>
@@ -152,27 +141,19 @@
   <header class="masthead">
     <div>
       <div class="doctype">Business Requirements Document</div>
-      <h1>Everyday Account &mdash; digital origination</h1>
-      <p class="sub">Aurora Bank &middot; Retail Deposits &middot; Customer Acquisition</p>
+      <h1>Terravale Field &mdash; hazard and safety observation reporting</h1>
+      <p class="sub">Terravale Resources &middot; Health, Safety &amp; Environment &middot; Iron Ore operations</p>
     </div>
     <div class="ref">
-      <b>BRD-2026-014</b>
-      Version 1.1<br>
+      <b>BRD-2026-031</b>
+      Version 1.0<br>
       9 August 2026
     </div>
   </header>
 
-  <p class="revision">
-    <strong>Revision 1.1 &mdash;</strong> raised at the FY26 Q4 steering committee.
-    Adds joint account applications: <strong>REQ-009</strong> and
-    <strong>BR-06</strong>. Changes are marked
-    <span class="chg-key">&#9646;</span> in the margin. No other requirement is
-    affected.
-  </p>
-
   <dl class="control">
-    <div><dt>Author</dt><dd>P. Raman, Business Analyst</dd></div>
-    <div><dt>Sponsor</dt><dd>Head of Retail Deposits</dd></div>
+    <div><dt>Author</dt><dd>Xavier Morris, Business Analyst</dd></div>
+    <div><dt>Sponsor</dt><dd>Head of HSE, Iron Ore</dd></div>
     <div><dt>Status</dt><dd class="status-approved">Approved for build</dd></div>
     <div><dt>Release</dt><dd>FY26 Q4</dd></div>
     <div><dt>Classification</dt><dd>Internal</dd></div>
@@ -180,27 +161,29 @@
 
   <h2><span class="n">1.</span> Purpose</h2>
   <p>
-    Customers can currently only open an Everyday Account in branch or by phone.
-    Abandonment in the phone channel is 41%. This document specifies the business
-    requirements for a self-service digital origination journey on mobile, to be
-    delivered as a click-through prototype for stakeholder sign-off before build.
+    Hazards and safety observations are currently raised on paper triplicate forms
+    collected at the end of shift. In the last quarter, 38% of forms were
+    incomplete or illegible, and the median time from observation to supervisor
+    awareness was 9.4 hours. This document specifies the business requirements for
+    a mobile hazard reporting journey for site personnel, to be delivered as a
+    click-through prototype for stakeholder sign-off before build.
   </p>
 
   <div class="two-col">
     <div>
       <h2><span class="n">2.</span> In scope</h2>
       <ul>
-        <li>Mobile web, single <em>or joint</em> applicant</li>
-        <li>Everyday Account and its variants</li>
-        <li>Capture, review and confirmation of an application</li>
+        <li>Mobile handset, single reporter</li>
+        <li>Hazards and safety observations</li>
+        <li>Capture, review and confirmation of one report</li>
       </ul>
     </div>
     <div>
       <h2><span class="n">3.</span> Out of scope</h2>
       <ul>
-        <li>Identity verification and credit decisioning</li>
-        <li>Core banking integration &mdash; no data is submitted</li>
-        <li>Existing-customer authentication</li>
+        <li>Injury and environmental incident reporting</li>
+        <li>Integration with the HSE case management system</li>
+        <li>Corrective action tracking and close-out</li>
       </ul>
     </div>
   </div>
@@ -213,54 +196,43 @@
     <tbody>
       <tr>
         <td class="id">REQ-001</td>
-        <td>The journey shall open with a product introduction screen stating the account name and its three headline benefits: no monthly account fee, opening in under five minutes, and an instant digital card.</td>
+        <td>The journey shall open with an introduction screen naming the tool and stating its three headline benefits: reports can be raised without mobile signal, no sign-in is required on site, and the report reaches the shift supervisor immediately.</td>
         <td class="pri must">Must</td>
       </tr>
       <tr>
         <td class="id">REQ-002</td>
-        <td>The customer shall be able to start an application from the introduction screen in a single action.</td>
+        <td>The reporter shall be able to start a hazard report from the introduction screen in a single action.</td>
         <td class="pri must">Must</td>
       </tr>
       <tr>
         <td class="id">REQ-003</td>
-        <td>The application shall capture the applicant&rsquo;s full name, email address and date of birth, and shall allow selection of an account type from: Everyday Account; Everyday Account + Savings; Student Everyday Account.</td>
+        <td>The report shall capture the reporter&rsquo;s name, their contact email, the date the hazard was observed, and a hazard category selected from: Slip, trip or fall; Vehicle and mobile plant; Working at height; Electrical; Environmental spill.</td>
         <td class="pri must">Must</td>
       </tr>
       <tr>
         <td class="id">REQ-004</td>
-        <td>The customer shall be prevented from progressing while any mandatory field is missing or invalid, and shall be shown which field is at fault and why.</td>
+        <td>The reporter shall be prevented from progressing while any mandatory field is missing or invalid, and shall be shown which field is at fault and why.</td>
         <td class="pri must">Must</td>
       </tr>
       <tr>
         <td class="id">REQ-005</td>
-        <td>Before submission the customer shall be shown a review screen displaying every value they entered, for confirmation.</td>
+        <td>Before submission the reporter shall be shown a review screen displaying every value they entered, for confirmation.</td>
         <td class="pri must">Must</td>
       </tr>
       <tr>
         <td class="id">REQ-006</td>
-        <td>The customer shall explicitly accept the Product Disclosure Statement and Target Market Determination before the application can be submitted.</td>
+        <td>The reporter shall explicitly confirm the declaration &mdash; that the details are accurate and that they have made the area safe where it was safe to do so &mdash; before the report can be submitted.</td>
         <td class="pri must">Must</td>
       </tr>
       <tr>
         <td class="id">REQ-007</td>
-        <td>On submission the customer shall be shown a confirmation screen containing their new BSB and account number, and an option to add the digital card to their wallet.</td>
+        <td>On submission the reporter shall be shown a confirmation screen containing the hazard reference number allocated to their report, and an option to notify their shift supervisor.</td>
         <td class="pri must">Must</td>
       </tr>
       <tr>
         <td class="id">REQ-008</td>
-        <td>The customer shall be able to see how far through the application they are, and to return to a previous step without losing entered data.</td>
+        <td>The reporter shall be able to see how far through the report they are, and to return to a previous step without losing entered data.</td>
         <td class="pri should">Should</td>
-      </tr>
-      <tr class="changed">
-        <td class="id">REQ-009</td>
-        <td>
-          The account type list shall additionally offer a <strong>Joint Everyday
-          Account</strong>. Where the customer selects it, the application shall
-          capture the second applicant&rsquo;s full name and email address, and the
-          review screen shall display both applicants. Where any other account type
-          is selected, no second-applicant details shall be requested.
-        </td>
-        <td class="pri must">Must</td>
       </tr>
     </tbody>
   </table>
@@ -271,31 +243,31 @@
       <tr><th style="width:62px">Ref</th><th>Rule</th></tr>
     </thead>
     <tbody>
-      <tr><td class="id">BR-01</td><td>Full name is mandatory and must be at least two characters.</td></tr>
-      <tr><td class="id">BR-02</td><td>Email address is mandatory and must be a structurally valid address.</td></tr>
-      <tr><td class="id">BR-03</td><td>Date of birth is mandatory and must be entered as DD / MM / YYYY.</td></tr>
-      <tr><td class="id">BR-04</td><td>The application cannot be submitted until the disclosure acceptance in REQ-006 is given.</td></tr>
-      <tr><td class="id">BR-05</td><td>No application data is transmitted or stored. This is a prototype for sign-off only.</td></tr>
-      <tr class="changed"><td class="id">BR-06</td><td>Where a joint account is selected, the second applicant&rsquo;s name and email are mandatory and are validated to the same standard as the first applicant (BR-01, BR-02).</td></tr>
+      <tr><td class="id">BR-01</td><td>Reporter name is mandatory and must be at least two characters.</td></tr>
+      <tr><td class="id">BR-02</td><td>Contact email is mandatory and must be a structurally valid address.</td></tr>
+      <tr><td class="id">BR-03</td><td>Date observed is mandatory and must be entered as DD / MM / YYYY.</td></tr>
+      <tr><td class="id">BR-04</td><td>The report cannot be submitted until the declaration in REQ-006 is confirmed.</td></tr>
+      <tr><td class="id">BR-05</td><td>No report data is transmitted or stored. This is a prototype for sign-off only.</td></tr>
     </tbody>
   </table>
 
   <h2><span class="n">6.</span> Brand and visual direction</h2>
   <p>
-    The journey shall use the existing Aurora mobile design system without
+    The journey shall use the existing Terravale mobile design system without
     modification &mdash; the same colour styles, type scale and spacing already in
-    use across the Aurora app. Target frame is 390 &times; 844.
+    use across Terravale field applications. Target frame is 390 &times; 844.
+    Controls must remain usable in gloves and in direct sunlight.
   </p>
   <div class="swatches">
-    <span><i style="background:#6E56F8"></i> brand/500 #6E56F8</span>
-    <span><i style="background:#2FB6FF"></i> cyan/400 #2FB6FF</span>
-    <span><i style="background:#43E5C4"></i> mint/400 #43E5C4</span>
-    <span><i style="background:#0B1020"></i> ink/900 #0B1020</span>
+    <span><i style="background:#C8442A"></i> brand/500 #C8442A</span>
+    <span><i style="background:#E0742C"></i> ochre/400 #E0742C</span>
+    <span><i style="background:#F0A22E"></i> amber/400 #F0A22E</span>
+    <span><i style="background:#14202B"></i> ink/900 #14202B</span>
   </div>
 
   <h2><span class="n">7.</span> Acceptance criteria</h2>
   <ul>
-    <li>A stakeholder can complete the journey end to end on a phone-sized screen without assistance.</li>
+    <li>A stakeholder can complete a hazard report end to end on a phone-sized screen without assistance.</li>
     <li>Every screen traces to at least one requirement reference above.</li>
     <li>Invalid input is refused with a visible, specific message (REQ-004, BR-01 to BR-03).</li>
     <li>The review screen shows the data the tester actually entered, not sample data (REQ-005).</li>
@@ -303,13 +275,14 @@
 
   <p class="note">
     <strong>Note for delivery:</strong> this is a sign-off prototype, not a
-    production build. No backend, no data capture, no integration. It exists so
-    the business can agree the journey before development is scheduled.
+    production build. No backend, no data capture, no integration with the HSE
+    case management system. It exists so the business can agree the journey before
+    development is scheduled.
   </p>
 
   <div class="signoff">
-    <span>Prepared by P. Raman &middot; Business Analyst</span>
-    <span>BRD-2026-014 &middot; v1.1 &middot; Page 1 of 1</span>
+    <span>Prepared by Xavier Morris &middot; Business Analyst</span>
+    <span>BRD-2026-031 &middot; v1.0 &middot; Page 1 of 1</span>
   </div>
 
 </main>

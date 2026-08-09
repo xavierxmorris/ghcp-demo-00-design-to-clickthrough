@@ -1,274 +1,381 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-AU">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aurora &mdash; Everyday Account &middot; click-through prototype</title>
-<meta name="description" content="Working click-through prototype for BRD-2026-014: Everyday Account digital origination. Runs from the filesystem. No data is sent or stored.">
-<!-- The Aurora design system, exactly as handed over. Not modified. -->
+<title>Terravale Field — hazard and safety observation reporting (prototype)</title>
+<meta name="description" content="Click-through prototype for BRD-2026-031 v1.1. Sign-off only: no data is transmitted or stored (BR-05).">
+
+<!-- The existing Terravale mobile design system, used unmodified (BRD section 6). -->
 <link rel="stylesheet" href="../assets/screens.css">
+<!-- Prototype-only additions: page shell, validation states, traceability strip. -->
 <link rel="stylesheet" href="prototype.css">
 </head>
+
 <body>
 
-<div class="stage">
+<main class="stage">
 
-  <header class="stage-head">
-    <div class="stage-title">Aurora &mdash; Everyday Account</div>
-    <div class="stage-sub">Click-through prototype &middot; BRD&#8209;2026&#8209;014 v1.1</div>
-    <div class="stage-badge" title="BR-05: no application data is transmitted or stored.">Nothing is sent or stored &middot; BR&#8209;05</div>
-  </header>
+  <div class="device" role="group" aria-label="Terravale Field, 390 by 844 phone frame">
+    <div class="frame">
 
-  <div class="device-wrap">
-    <div class="device">
+      <div class="status-bar">
+        <span>07:42</span>
+        <span class="status-right">
+          <span class="dots"><i></i><i></i><i></i></span>
+          <span class="battery"></span>
+        </span>
+      </div>
 
-      <!-- ======================================================= 01 Welcome -->
-      <section id="screen-1"
-               class="frame screen is-active"
-               data-screen="1"
-               data-name="Welcome"
-               data-req="REQ-001, REQ-002, BR-05"
-               aria-label="Screen 1 of 4, Welcome">
-        <div class="status-bar">
-          <span>9:41</span>
-          <span class="dots" aria-hidden="true"><i></i><i></i><i></i><span class="battery"></span></span>
-        </div>
-        <div class="frame-body">
-          <div class="brandmark"><span class="glyph"></span> Aurora</div>
+      <div class="frame-body">
 
-          <p class="eyebrow" style="margin-top:22px">Everyday Account</p>
-          <h1 class="display" data-focus tabindex="-1">Banking that <span class="grad">moves</span> with you.</h1>
+        <!-- ============================================================ 1 === -->
+        <section class="screen is-active"
+                 id="screen-intro"
+                 data-screen="1"
+                 data-req="REQ-001, REQ-002, BR-05"
+                 aria-label="Introduction">
 
-          <div class="hero-art">
-            <span class="orb orb-a" aria-hidden="true"></span>
-            <span class="orb orb-b" aria-hidden="true"></span>
-            <span class="orb orb-c" aria-hidden="true"></span>
+          <header class="intro-head">
+            <div class="brandmark"><span class="glyph" aria-hidden="true"></span>Terravale Field</div>
+            <p class="eyebrow" data-ref="REQ-001">Hazard &amp; safety observations</p>
+            <h1 class="display">Report a <span class="grad">hazard</span></h1>
+            <p class="lede">Raise a hazard or a safety observation from anywhere on site — the pit, the crusher, the workshop or the haul road.</p>
+          </header>
+
+          <div class="hero-art" aria-hidden="true">
+            <span class="orb orb-a"></span>
+            <span class="orb orb-b"></span>
+            <span class="orb orb-c"></span>
             <div class="hero-card">
               <div class="row">
-                <span class="label">Everyday</span>
-                <span class="label">+2.4%</span>
+                <span class="label">Mount Verity operations</span>
+                <span class="label">Shift A</span>
               </div>
-              <div class="row" style="margin-top:2px">
-                <span class="amount">$4,820.60</span>
+              <div class="row" style="margin-top:4px">
+                <span class="amount">214 days</span>
+              </div>
+              <div class="row">
+                <span class="label">since last recordable injury</span>
               </div>
               <div class="bar"></div>
             </div>
           </div>
 
-          <!-- REQ-001: the three headline benefits -->
-          <ul class="value-list" data-rule="REQ-001">
-            <li><span class="tick">&#10003;</span> No monthly account fee</li>
-            <li><span class="tick">&#10003;</span> Open in under 5 minutes</li>
-            <li><span class="tick">&#10003;</span> Instant digital card</li>
+          <ul class="value-list" data-ref="REQ-001">
+            <li><span class="tick" aria-hidden="true">✓</span>Works with no mobile signal</li>
+            <li><span class="tick" aria-hidden="true">✓</span>No sign-in needed on site</li>
+            <li><span class="tick" aria-hidden="true">✓</span>Reaches your shift supervisor immediately</li>
           </ul>
 
           <div class="frame-actions">
-            <!-- REQ-002: start the application in a single action -->
-            <button type="button" class="btn btn-primary" data-go="2" data-rule="REQ-002">Get started</button>
-            <p class="legal">Sign-off prototype &mdash; nothing you enter is sent or stored.</p>
+            <button class="btn btn-primary" type="button" id="btn-start" data-ref="REQ-002">
+              Start hazard report
+            </button>
+            <p class="meta note-br" data-ref="BR-05">Sign-off prototype. Nothing you enter is transmitted or stored.</p>
           </div>
-        </div>
-        <div class="home-indicator"></div>
-      </section>
+        </section>
 
-      <!-- =================================================== 02 Your details -->
-      <section id="screen-2"
-               class="frame screen"
-               data-screen="2"
-               data-name="Your details"
-               data-req="REQ-003, REQ-004, REQ-008, REQ-009, BR-01, BR-02, BR-03, BR-05, BR-06"
-               aria-label="Screen 2 of 4, Your details"
-               hidden>
-        <div class="status-bar">
-          <span>9:41</span>
-          <span class="dots" aria-hidden="true"><i></i><i></i><i></i><span class="battery"></span></span>
-        </div>
-        <div class="frame-body">
-          <!-- REQ-008: where am I, and how do I go back -->
-          <div class="frame-nav" data-rule="REQ-008">
-            <button type="button" class="nav-back" data-back="1" aria-label="Back to the previous step">&#8249;</button>
-            <span class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="2"
-                  aria-label="Step 2 of 4"><span style="width:50%"></span></span>
-            <span class="step-count">2 / 4</span>
+        <!-- ============================================================ 2 === -->
+        <section class="screen"
+                 id="screen-details"
+                 data-screen="2"
+                 data-req="REQ-003, REQ-004, REQ-008, BR-01, BR-02, BR-03"
+                 aria-label="Hazard details">
+
+          <nav class="frame-nav">
+            <button class="nav-back" type="button" data-goto="intro" aria-label="Back to the introduction">‹</button>
+            <div class="progress" role="progressbar" aria-label="Report progress"
+                 aria-valuemin="0" aria-valuemax="100" aria-valuenow="33">
+              <span style="width:33%"></span>
+            </div>
+            <span class="step-count" data-ref="REQ-008">Step 1 of 3</span>
+          </nav>
+
+          <h2 class="h2" tabindex="-1">Hazard details</h2>
+          <p class="meta" id="details-meta">Every field is required.</p>
+
+          <div class="alert" id="details-alert" role="alert" hidden>
+            <span class="alert-icon" aria-hidden="true">!</span>
+            <span id="details-alert-text"></span>
           </div>
 
-          <h2 class="h2" data-focus tabindex="-1">Your details</h2>
-          <p class="meta">We only ask for what we legally need.</p>
+          <form class="field-stack" id="hazard-form" novalidate autocomplete="off">
 
-          <form id="details-form" class="form-flow" novalidate autocomplete="off">
-            <!-- REQ-003: name, email, date of birth and account type -->
-            <div class="field-stack">
-              <div class="field" data-field="name">
-                <label for="f-name">Full name</label>
-                <input id="f-name" name="name" type="text" placeholder="Jordan Blake"
-                       autocomplete="off" spellcheck="false" aria-describedby="e-name">
-                <p class="field-error" id="e-name" data-rule="BR-01" role="alert" hidden></p>
-              </div>
-
-              <div class="field" data-field="email">
-                <label for="f-email">Email</label>
-                <input id="f-email" name="email" type="text" inputmode="email" placeholder="jordan@example.com"
-                       autocomplete="off" spellcheck="false" aria-describedby="e-email">
-                <p class="field-error" id="e-email" data-rule="BR-02" role="alert" hidden></p>
-              </div>
-
-              <div class="field" data-field="dob">
-                <label for="f-dob">Date of birth</label>
-                <input id="f-dob" name="dob" type="text" inputmode="numeric" placeholder="DD / MM / YYYY"
-                       maxlength="14" autocomplete="off" aria-describedby="h-dob e-dob">
-                <p class="hint" id="h-dob">Enter it as DD / MM / YYYY.</p>
-                <p class="field-error" id="e-dob" data-rule="BR-03" role="alert" hidden></p>
-              </div>
-
-              <!-- REQ-009: the list also offers a Joint Everyday Account -->
-              <div class="field" data-field="account" data-rule="REQ-003, REQ-009">
-                <label for="f-account">Account type</label>
-                <select id="f-account" name="account">
-                  <option value="Everyday Account">Everyday Account</option>
-                  <option value="Everyday Account + Savings">Everyday Account + Savings</option>
-                  <option value="Student Everyday Account">Student Everyday Account</option>
-                  <option value="Joint Everyday Account">Joint Everyday Account</option>
-                </select>
-              </div>
-
-              <!-- REQ-009 / BR-06: asked for only while a joint account is selected -->
-              <div class="joint-group" id="joint-group" data-rule="REQ-009" hidden>
-                <p class="group-label">Second applicant</p>
-
-                <div class="field" data-field="name2">
-                  <label for="f-name2">Their full name</label>
-                  <input id="f-name2" name="name2" type="text" placeholder="Sam Okafor"
-                         autocomplete="off" spellcheck="false" aria-describedby="e-name2">
-                  <p class="field-error" id="e-name2" data-rule="BR-06" role="alert" hidden></p>
-                </div>
-
-                <div class="field" data-field="email2">
-                  <label for="f-email2">Their email</label>
-                  <input id="f-email2" name="email2" type="text" inputmode="email" placeholder="sam@example.com"
-                         autocomplete="off" spellcheck="false" aria-describedby="e-email2">
-                  <p class="field-error" id="e-email2" data-rule="BR-06" role="alert" hidden></p>
-                </div>
-              </div>
+            <div class="field" data-field="name" data-ref="BR-01">
+              <label for="f-name">Reporter name</label>
+              <input id="f-name" name="name" type="text" inputmode="text"
+                     placeholder="e.g. Jordan Kelly" autocomplete="name"
+                     aria-describedby="e-name">
+              <p class="field-error" id="e-name"></p>
             </div>
 
-            <div class="frame-actions">
-              <!-- REQ-004: blocked here while anything is missing or invalid -->
-              <button type="submit" class="btn btn-primary" data-rule="REQ-004">Continue</button>
-              <p class="legal">Nothing you type leaves this device.</p>
+            <div class="field" data-field="email" data-ref="BR-02">
+              <label for="f-email">Contact email</label>
+              <input id="f-email" name="email" type="email" inputmode="email"
+                     placeholder="name@terravale.com.au" autocomplete="email"
+                     spellcheck="false" aria-describedby="e-email">
+              <p class="field-error" id="e-email"></p>
             </div>
+
+            <div class="field" data-field="date" data-ref="BR-03">
+              <div class="field-head">
+                <label for="f-date">Date observed</label>
+                <button class="chip-action" type="button" id="btn-today">Today</button>
+              </div>
+              <input id="f-date" name="date" type="text" inputmode="numeric"
+                     placeholder="DD / MM / YYYY" maxlength="14"
+                     autocomplete="off" aria-describedby="h-date e-date">
+              <p class="hint" id="h-date">Enter as DD / MM / YYYY.</p>
+              <p class="field-error" id="e-date"></p>
+            </div>
+
+            <div class="field" data-field="category" data-ref="REQ-003">
+              <label for="f-category">Hazard category</label>
+              <select id="f-category" name="category" aria-describedby="e-category">
+                <option value="">Select a category</option>
+                <option>Slip, trip or fall</option>
+                <option>Vehicle and mobile plant</option>
+                <option>Working at height</option>
+                <option>Electrical</option>
+                <option>Environmental spill</option>
+              </select>
+              <p class="field-error" id="e-category"></p>
+            </div>
+
           </form>
-        </div>
-        <div class="home-indicator"></div>
-      </section>
-
-      <!-- ======================================================== 03 Review -->
-      <section id="screen-3"
-               class="frame screen"
-               data-screen="3"
-               data-name="Review and consent"
-               data-req="REQ-005, REQ-006, REQ-008, REQ-009, BR-04, BR-05"
-               aria-label="Screen 3 of 4, Check and confirm"
-               hidden>
-        <div class="status-bar">
-          <span>9:41</span>
-          <span class="dots" aria-hidden="true"><i></i><i></i><i></i><span class="battery"></span></span>
-        </div>
-        <div class="frame-body">
-          <div class="frame-nav" data-rule="REQ-008">
-            <button type="button" class="nav-back" data-back="2" aria-label="Back to your details">&#8249;</button>
-            <span class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="3"
-                  aria-label="Step 3 of 4"><span style="width:75%"></span></span>
-            <span class="step-count">3 / 4</span>
-          </div>
-
-          <h2 class="h2" data-focus tabindex="-1">Check and confirm</h2>
-          <p class="meta">Nothing is submitted until you tap confirm.</p>
-
-          <!-- REQ-005: every value the customer entered, played back -->
-          <div class="summary" data-rule="REQ-005">
-            <dl>
-              <div class="item"><dt>Name</dt><dd id="r-name">&mdash;</dd></div>
-              <div class="item"><dt>Email</dt><dd id="r-email">&mdash;</dd></div>
-              <div class="item"><dt>Date of birth</dt><dd id="r-dob">&mdash;</dd></div>
-              <!-- REQ-009: both applicants are shown when the account is joint -->
-              <div class="item" id="row-name2" data-rule="REQ-009" hidden><dt>Second applicant</dt><dd id="r-name2">&mdash;</dd></div>
-              <div class="item" id="row-email2" data-rule="REQ-009" hidden><dt>Their email</dt><dd id="r-email2">&mdash;</dd></div>
-              <div class="item"><dt>Account</dt><dd id="r-account">&mdash;</dd></div>
-            </dl>
-          </div>
-
-          <!-- REQ-006 / BR-04: explicit acceptance before submission -->
-          <label class="consent" id="consent-block" data-rule="REQ-006" for="f-consent">
-            <input type="checkbox" id="f-consent" aria-describedby="e-consent">
-            <span>I agree to the Product Disclosure Statement and Target Market Determination.</span>
-          </label>
-          <p class="field-error field-error-block" id="e-consent" data-rule="BR-04" role="alert" hidden></p>
 
           <div class="frame-actions">
-            <button type="button" class="btn btn-primary" id="confirm-btn" data-rule="BR-04">Confirm and open</button>
-            <button type="button" class="btn btn-ghost" data-back="2">Back</button>
-            <p class="legal">This prototype does not submit or store your details.</p>
+            <button class="btn btn-primary" type="button" id="btn-continue" data-ref="REQ-004">
+              Continue to risk rating
+            </button>
           </div>
-        </div>
-        <div class="home-indicator"></div>
-      </section>
+        </section>
 
-      <!-- ================================================== 04 Confirmation -->
-      <section id="screen-4"
-               class="frame screen"
-               data-screen="4"
-               data-name="Confirmation"
-               data-req="REQ-007, BR-05"
-               aria-label="Screen 4 of 4, Confirmation"
-               hidden>
-        <div class="status-bar">
-          <span>9:41</span>
-          <span class="dots" aria-hidden="true"><i></i><i></i><i></i><span class="battery"></span></span>
-        </div>
-        <div class="frame-body">
-          <div class="done-body">
-            <div class="seal" aria-hidden="true">&#10003;</div>
-            <p class="eyebrow">Account open</p>
-            <h1 class="display" data-focus tabindex="-1">You&rsquo;re all <span class="grad">set</span>.</h1>
-            <p class="lede" id="done-lede">Your digital card is ready to add to your wallet.</p>
+        <!-- ============================================================ 3 === -->
+        <section class="screen"
+                 id="screen-risk"
+                 data-screen="3"
+                 data-req="REQ-009, REQ-004, REQ-008, BR-06"
+                 aria-label="Risk rating">
 
-            <!-- REQ-007: the new BSB and account number -->
-            <div class="account-chip" data-rule="REQ-007">
-              <div class="label">BSB / Account</div>
-              <div class="value" id="r-account-number">032&#8209;114 &middot; 8820 4471</div>
+          <nav class="frame-nav">
+            <button class="nav-back" type="button" data-goto="details" aria-label="Back to hazard details">‹</button>
+            <div class="progress" role="progressbar" aria-label="Report progress"
+                 aria-valuemin="0" aria-valuemax="100" aria-valuenow="66">
+              <span style="width:66%"></span>
             </div>
+            <span class="step-count" data-ref="REQ-008">Step 2 of 3</span>
+          </nav>
+
+          <h2 class="h2" tabindex="-1">Risk rating</h2>
+          <p class="meta" id="risk-meta">How badly could this have ended?</p>
+
+          <div class="alert" id="risk-alert" role="alert" hidden>
+            <span class="alert-icon" aria-hidden="true">!</span>
+            <span id="risk-alert-text"></span>
+          </div>
+
+          <form class="field-stack" id="risk-form" novalidate autocomplete="off">
+
+            <div class="field field-risk" data-field="risk" data-ref="REQ-009">
+              <span class="risk-label" id="risk-label">Risk rating</span>
+
+              <div class="risk-options" role="radiogroup" aria-labelledby="risk-label"
+                   aria-describedby="e-risk">
+
+                <label class="risk-option" for="f-risk-low" data-level="Low">
+                  <span class="risk-bar" aria-hidden="true"></span>
+                  <input type="radio" name="risk" id="f-risk-low" value="Low">
+                  <span class="risk-text">
+                    <span class="risk-name">Low</span>
+                    <span class="risk-note">Unlikely to hurt anyone</span>
+                  </span>
+                </label>
+
+                <label class="risk-option" for="f-risk-moderate" data-level="Moderate">
+                  <span class="risk-bar" aria-hidden="true"></span>
+                  <input type="radio" name="risk" id="f-risk-moderate" value="Moderate">
+                  <span class="risk-text">
+                    <span class="risk-name">Moderate</span>
+                    <span class="risk-note">Could cause a first-aid or medical injury</span>
+                  </span>
+                </label>
+
+                <label class="risk-option" for="f-risk-high" data-level="High potential">
+                  <span class="risk-bar" aria-hidden="true"></span>
+                  <input type="radio" name="risk" id="f-risk-high" value="High potential">
+                  <span class="risk-text">
+                    <span class="risk-name">High potential</span>
+                    <span class="risk-note">Could have killed or permanently injured someone</span>
+                  </span>
+                </label>
+
+              </div>
+              <p class="field-error" id="e-risk"></p>
+            </div>
+
+            <!-- REQ-009: requested only for a high potential rating. BR-06 validates
+                 these to the same standard as the reporter's own details. -->
+            <div class="escalation" id="escalation" data-ref="BR-06" hidden>
+              <p class="escalation-head">
+                <span class="escalation-flag" aria-hidden="true">!</span>
+                High potential hazards are escalated. Name the supervisor you have
+                notified.
+              </p>
+
+              <div class="field" data-field="supName">
+                <label for="f-sup-name">Supervisor notified</label>
+                <input id="f-sup-name" name="supName" type="text" inputmode="text"
+                       placeholder="e.g. Priya Raman" autocomplete="off"
+                       aria-describedby="e-sup-name">
+                <p class="field-error" id="e-sup-name"></p>
+              </div>
+
+              <div class="field" data-field="supEmail">
+                <label for="f-sup-email">Supervisor contact email</label>
+                <input id="f-sup-email" name="supEmail" type="email" inputmode="email"
+                       placeholder="name@terravale.com.au" autocomplete="off"
+                       spellcheck="false" aria-describedby="e-sup-email">
+                <p class="field-error" id="e-sup-email"></p>
+              </div>
+            </div>
+
+          </form>
+
+          <div class="frame-actions">
+            <button class="btn btn-primary" type="button" id="btn-risk-continue" data-ref="REQ-004">
+              Continue to review
+            </button>
+          </div>
+        </section>
+
+        <!-- ============================================================ 4 === -->
+        <section class="screen"
+                 id="screen-review"
+                 data-screen="4"
+                 data-req="REQ-005, REQ-006, REQ-008, REQ-009, BR-04, BR-05"
+                 aria-label="Check your report">
+
+          <nav class="frame-nav">
+            <button class="nav-back" type="button" data-goto="risk" aria-label="Back to risk rating">‹</button>
+            <div class="progress" role="progressbar" aria-label="Report progress"
+                 aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+              <span style="width:100%"></span>
+            </div>
+            <span class="step-count" data-ref="REQ-008">Step 3 of 3</span>
+          </nav>
+
+          <h2 class="h2" tabindex="-1">Check your report</h2>
+          <p class="meta">Go back to change anything. Nothing has been submitted yet.</p>
+
+          <div class="review-scroll">
+            <div class="summary" data-ref="REQ-005">
+              <dl>
+                <div class="item"><dt>Reporter</dt><dd id="sum-name">—</dd></div>
+                <div class="item"><dt>Contact email</dt><dd id="sum-email">—</dd></div>
+                <div class="item"><dt>Date observed</dt><dd id="sum-date">—</dd></div>
+                <div class="item"><dt>Category</dt><dd id="sum-category">—</dd></div>
+                <div class="item"><dt>Risk rating</dt><dd id="sum-risk">—</dd></div>
+              </dl>
+            </div>
+
+            <!-- REQ-009: shown only where the rating is High potential. -->
+            <div class="escalation-summary" id="sum-escalation" data-ref="REQ-009" hidden>
+              <p class="review-caption">Escalated — supervisor notified</p>
+              <div class="summary">
+                <dl>
+                  <div class="item"><dt>Name</dt><dd id="sum-sup-name">—</dd></div>
+                  <div class="item"><dt>Email</dt><dd id="sum-sup-email">—</dd></div>
+                </dl>
+              </div>
+            </div>
+
+            <label class="consent" id="consent-block" for="f-declare" data-ref="REQ-006">
+              <input type="checkbox" id="f-declare" aria-describedby="e-declare">
+              <span>I confirm these details are accurate, and that I have made the area safe where it was safe to do so.</span>
+            </label>
+            <p class="field-error" id="e-declare" role="alert"></p>
+
+            <p class="meta note-br" data-ref="BR-05">Prototype for sign-off only — this report is not transmitted or stored anywhere.</p>
           </div>
 
           <div class="frame-actions">
-            <!-- REQ-007: add the digital card to the wallet -->
-            <button type="button" class="btn btn-primary" id="wallet-btn" data-rule="REQ-007">Add card to wallet</button>
-            <button type="button" class="btn btn-ghost" id="home-btn">Back to home</button>
-            <p class="legal">Illustrative numbers only &mdash; no account has been opened.</p>
+            <button class="btn btn-primary is-blocked" type="button" id="btn-submit"
+                    data-blocked="true" aria-describedby="e-declare" data-ref="BR-04">
+              Submit report
+            </button>
+            <button class="btn btn-ghost" type="button" data-goto="details" data-ref="REQ-008">
+              Back to details
+            </button>
           </div>
-        </div>
-        <div class="home-indicator"></div>
+        </section>
 
-        <p class="toast" id="toast" role="status" hidden></p>
-      </section>
+        <!-- ============================================================ 5 === -->
+        <section class="screen"
+                 id="screen-done"
+                 data-screen="5"
+                 data-req="REQ-007, BR-05"
+                 aria-label="Report submitted">
 
+          <nav class="frame-nav">
+            <div class="progress" role="progressbar" aria-label="Report progress"
+                 aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+              <span style="width:100%"></span>
+            </div>
+            <span class="step-count">Submitted</span>
+          </nav>
+
+          <div class="done-body">
+            <div class="seal" aria-hidden="true">✓</div>
+            <h2 class="display" tabindex="-1">Report received</h2>
+            <p class="lede">Your hazard report has been logged against this shift.</p>
+
+            <div class="account-chip" data-ref="REQ-007">
+              <div class="label">Hazard reference</div>
+              <div class="value" id="hazard-ref">HZ-0000-00000</div>
+            </div>
+
+            <p class="notify-status" id="notify-status" role="status"></p>
+            <p class="meta note-br" data-ref="BR-05">Nothing was transmitted or stored. This is a sign-off prototype.</p>
+          </div>
+
+          <div class="frame-actions">
+            <button class="btn btn-primary" type="button" id="btn-notify" data-ref="REQ-007">
+              Notify shift supervisor
+            </button>
+            <button class="btn btn-ghost" type="button" id="btn-restart">
+              Start another report
+            </button>
+          </div>
+        </section>
+
+      </div><!-- /frame-body -->
+
+      <div class="home-indicator"></div>
+    </div><!-- /frame -->
+  </div><!-- /device -->
+
+  <!-- ------------------------------------------------- traceability strip -- -->
+  <footer class="trace" aria-label="Requirement traceability">
+    <div class="trace-top">
+      <span class="trace-eyebrow">Traceability</span>
+      <span class="trace-screen" id="trace-screen">Screen 1 of 5</span>
     </div>
-  </div>
 
-  <!-- Traceability strip: read live from each screen's data-req attribute -->
-  <footer class="trace">
-    <div class="trace-line">
-      <b id="trace-step">Screen 1 of 4</b>
-      <span class="trace-name" id="trace-name">Welcome</span>
+    <div class="trace-chips" id="trace-chips" aria-live="polite">
+      <!-- filled live from the active screen's data-req attribute -->
     </div>
-    <div class="trace-refs" id="trace-refs" aria-label="Requirements satisfied by this screen"></div>
-    <label class="trace-toggle">
-      <input type="checkbox" id="trace-mode"> Show BRD refs on the screen
+
+    <label class="trace-toggle" for="toggle-refs">
+      <input type="checkbox" id="toggle-refs">
+      <span>Show BRD refs on the screen</span>
     </label>
+
+    <p class="trace-doc">BRD-2026-031 v1.1 · every screen traces to a requirement</p>
   </footer>
 
-  <p class="sr-only" role="status" id="live-region"></p>
-
-</div>
+</main>
 
 <script src="app.js"></script>
 </body>

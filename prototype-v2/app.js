@@ -1,576 +1,599 @@
 /* ============================================================================
-   Aurora — Everyday Account, click-through prototype
-   BRD-2026-014 v1.1
+   Terravale Field - hazard and safety observation reporting
+   Click-through prototype for BRD-2026-031 v1.1.
 
-   Traceability
-     REQ-001  intro screen, account name + three headline benefits   screen 1
-     REQ-002  start the application in a single action               screen 1
-     REQ-003  capture name, email, date of birth, account type       screen 2
-     REQ-004  block progression, say which field and why             screen 2
-     REQ-005  review every entered value before submission           screen 3
-     REQ-006  explicit PDS + TMD acceptance                          screen 3
-     REQ-007  confirmation with BSB / account number + wallet        screen 4
-     REQ-008  progress indicator and lossless back navigation        screens 2-4
-     REQ-009  Joint Everyday Account: offer the type, capture the
-              second applicant, show both on review                  screens 2-3
-     BR-01    full name mandatory, at least two characters
-     BR-02    email mandatory, structurally valid
-     BR-03    date of birth mandatory, DD / MM / YYYY
-     BR-04    no submission until the disclosure acceptance is given
-     BR-05    nothing is transmitted or stored
-     BR-06    on a joint account the second applicant's name and email are
-              mandatory and validated to BR-01 / BR-02
-
-   BR-05 is enforced by construction: there is no fetch, no XMLHttpRequest, no
-   form action, no cookie, no localStorage and no sessionStorage anywhere in
-   this file. Every value lives in the `state` object below, inside this
-   closure, and dies with the browser tab.
+   BR-05: nothing here transmits or stores anything. There is no fetch, no
+   XMLHttpRequest, no localStorage, no sessionStorage and no cookie. Entered
+   values live in the DOM for the length of the visit and nowhere else.
    ========================================================================= */
 
 (function () {
   'use strict';
 
-  var TOTAL_STEPS = 4;
+  // ------------------------------------------------------------- elements --
 
-  /* REQ-009 — the one account type that pulls in a second applicant. */
-  var JOINT_ACCOUNT = 'Joint Everyday Account';
+  var body        = document.body;
+  var screens     = Array.prototype.slice.call(document.querySelectorAll('.screen'));
+  var form        = document.getElementById('hazard-form');
+  var riskForm    = document.getElementById('risk-form');
 
-  /* ------------------------------------------------------------- state --- */
+  // REQ-009 / BR-06 - the risk rating and the escalation it can trigger
+  var riskInputs  = Array.prototype.slice.call(document.querySelectorAll('input[name="risk"]'));
+  var riskWrap    = document.querySelector('.field-risk');
+  var riskErr     = document.getElementById('e-risk');
+  var riskAlert   = document.getElementById('risk-alert');
+  var escalation  = document.getElementById('escalation');
+  var sumRisk     = document.getElementById('sum-risk');
+  var sumEscalation = document.getElementById('sum-escalation');
 
-  function blankState() {
-    return {
-      name: '',
-      email: '',
-      dob: '',
-      account: 'Everyday Account',
-      name2: '',
-      email2: '',
-      consent: false,
-      bsb: '',
-      number: ''
+  var declare      = document.getElementById('f-declare');
+  var consentBlock = document.getElementById('consent-block');
+  var declareErr   = document.getElementById('e-declare');
+  var submitBtn    = document.getElementById('btn-submit');
+
+  var refOut       = document.getElementById('hazard-ref');
+  var notifyBtn    = document.getElementById('btn-notify');
+  var notifyStatus = document.getElementById('notify-status');
+
+  var traceScreen = document.getElementById('trace-screen');
+  var traceChips  = document.getElementById('trace-chips');
+  var toggleRefs  = document.getElementById('toggle-refs');
+  var reviewScroll = document.querySelector('.review-scroll');
+
+  var current = document.querySelector('.screen.is-active') || screens[0];
+  var started = false;
+
+  // --------------------------------------------- fields and business rules --
+  // REQ-003 and REQ-009 define what is captured. BR-01 to BR-03 and BR-06
+  // define what is valid. Each message names the field and says why it was
+  // refused (REQ-004).
+
+  var ORDER = ['name', 'email', 'date', 'category'];
+
+  // BR-06 holds the supervisor's details to the same standard as the
+  // reporter's own, so both sets are checked by the same two rules.
+  var SUPERVISOR = ['supName', 'supEmail'];
+
+  var EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  // BR-01 - mandatory, at least two characters
+  function nameRule(missing, tooShort) {
+    return function (value) {
+      var v = value.trim();
+      if (!v) { return missing; }
+      if (v.length < 2) { return tooShort; }
+      return '';
     };
   }
 
-  var state = blankState();
-  var current = 1;
-  var showErrors = false;   /* only nag after the customer has tried to continue */
-
-  /* ------------------------------------------------------------- lookup -- */
-
-  var $ = function (sel) { return document.querySelector(sel); };
-  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
-
-  var screens   = $$('.screen');
-  var stage     = $('.stage');
-  var stageHead = $('.stage-head');
-  var traceEl   = $('.trace');
-  var traceStep = $('#trace-step');
-  var traceName = $('#trace-name');
-  var traceRefs = $('#trace-refs');
-  var traceMode = $('#trace-mode');
-  var live      = $('#live-region');
-
-  var form      = $('#details-form');
-  var inputs    = {
-    name:    $('#f-name'),
-    email:   $('#f-email'),
-    dob:     $('#f-dob'),
-    account: $('#f-account'),
-    name2:   $('#f-name2'),
-    email2:  $('#f-email2')
-  };
-  var jointGroup = $('#joint-group');
-  var fieldStack = $('#details-form .field-stack');
-  var consent   = $('#f-consent');
-  var consentBlock = $('#consent-block');
-  var toast     = $('#toast');
-
-  /* --------------------------------------------------- business rules ---- */
-
-  /* BR-02: structural check only. Deliberately permissive about the local
-     part — the rule is "structurally valid", not "deliverable". */
-  var EMAIL_RE = /^[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/;
-  var DOB_RE = /^(\d{2})\s*\/\s*(\d{2})\s*\/\s*(\d{4})$/;
-
-  var validators = {
-    /* BR-01 — mandatory, at least two characters. */
-    name: function (value) {
+  // BR-02 - mandatory, structurally valid address
+  function emailRule(missing, malformed) {
+    return function (value) {
       var v = value.trim();
-      if (!v) { return 'Enter your full name.'; }
-      if (v.length < 2) { return 'Your full name must be at least 2 characters.'; }
-      return null;
+      if (!v) { return missing; }
+      if (!EMAIL_SHAPE.test(v)) { return malformed; }
+      return '';
+    };
+  }
+
+  var FIELDS = {
+    name: {
+      input: document.getElementById('f-name'),
+      err: document.getElementById('e-name'),
+      summary: document.getElementById('sum-name'),
+      validate: nameRule(
+        'Enter the reporter name. This field is required.',
+        'Reporter name must be at least 2 characters.'
+      )
     },
 
-    /* BR-02 — mandatory, structurally valid address. */
-    email: function (value) {
-      var v = value.trim();
-      if (!v) { return 'Enter your email address.'; }
-      if (!EMAIL_RE.test(v)) { return 'Enter an email address like name@example.com.'; }
-      return null;
+    email: {
+      input: document.getElementById('f-email'),
+      err: document.getElementById('e-email'),
+      summary: document.getElementById('sum-email'),
+      validate: emailRule(
+        'Enter a contact email address. This field is required.',
+        'Enter a valid email address, for example jordan.kelly@terravale.com.au'
+      )
     },
 
-    /* BR-03 — mandatory, entered as DD / MM / YYYY. */
-    dob: function (value) {
-      var v = value.trim();
-      if (!v) { return 'Enter your date of birth.'; }
+    date: {
+      input: document.getElementById('f-date'),
+      err: document.getElementById('e-date'),
+      summary: document.getElementById('sum-date'),
+      // BR-03 - mandatory, entered as DD / MM / YYYY
+      validate: function (value) {
+        var v = value.trim();
+        if (!v) { return 'Enter the date you observed the hazard. This field is required.'; }
 
-      var parts = DOB_RE.exec(v);
-      if (!parts) { return 'Enter your date of birth as DD / MM / YYYY.'; }
+        var parts = /^(\d{2})\s*\/\s*(\d{2})\s*\/\s*(\d{4})$/.exec(v);
+        if (!parts) { return 'Enter the date observed as DD / MM / YYYY.'; }
 
-      var day = parseInt(parts[1], 10);
-      var month = parseInt(parts[2], 10);
-      var year = parseInt(parts[3], 10);
+        var day = Number(parts[1]);
+        var month = Number(parts[2]);
+        var year = Number(parts[3]);
 
-      if (month < 1 || month > 12) { return 'The month must be between 01 and 12.'; }
-      if (day < 1) { return 'The day must be between 01 and 31.'; }
-
-      var probe = new Date(year, month - 1, day);
-      if (probe.getFullYear() !== year || probe.getMonth() !== month - 1 || probe.getDate() !== day) {
-        return 'That date does not exist. Check the day and month.';
+        if (month < 1 || month > 12) {
+          return 'That date does not exist. The month must be between 01 and 12.';
+        }
+        var daysInMonth = new Date(year, month, 0).getDate();
+        if (day < 1 || day > daysInMonth) {
+          return 'That date does not exist. That month has ' + daysInMonth + ' days.';
+        }
+        return '';
       }
-      if (probe.getTime() > Date.now()) { return 'Your date of birth cannot be in the future.'; }
-      if (year < 1900) { return 'Check the year — it should be 1900 or later.'; }
-      return null;
     },
 
-    /* BR-06 — the second applicant's name, held to the same bar as BR-01. */
-    name2: function (value) {
-      var v = value.trim();
-      if (!v) { return 'Enter the second applicant\u2019s full name.'; }
-      if (v.length < 2) { return 'Their full name must be at least 2 characters.'; }
-      return null;
+    category: {
+      input: document.getElementById('f-category'),
+      err: document.getElementById('e-category'),
+      summary: document.getElementById('sum-category'),
+      // REQ-003 - one of the five listed categories
+      validate: function (value) {
+        if (!value) { return 'Select the hazard category that best fits what you saw.'; }
+        return '';
+      }
     },
 
-    /* BR-06 — the second applicant's email, held to the same bar as BR-02. */
-    email2: function (value) {
-      var v = value.trim();
-      if (!v) { return 'Enter the second applicant\u2019s email address.'; }
-      if (!EMAIL_RE.test(v)) { return 'Enter their email address like name@example.com.'; }
-      return null;
+    // REQ-009 / BR-06 - requested and checked only for a High potential rating
+    supName: {
+      input: document.getElementById('f-sup-name'),
+      err: document.getElementById('e-sup-name'),
+      summary: document.getElementById('sum-sup-name'),
+      validate: nameRule(
+        'Enter the name of the supervisor you notified. This field is required.',
+        'Supervisor name must be at least 2 characters.'
+      )
+    },
+
+    supEmail: {
+      input: document.getElementById('f-sup-email'),
+      err: document.getElementById('e-sup-email'),
+      summary: document.getElementById('sum-sup-email'),
+      validate: emailRule(
+        'Enter the supervisor\u2019s contact email. This field is required.',
+        'Enter a valid email address for the supervisor, for example priya.raman@terravale.com.au'
+      )
     }
   };
 
-  var APPLICANT_FIELDS = ['name', 'email', 'dob'];
-  var JOINT_FIELDS = ['name2', 'email2'];
-  var ALL_FIELDS = APPLICANT_FIELDS.concat(JOINT_FIELDS);
+  function wrapOf(key) { return FIELDS[key].input.closest('.field'); }
 
-  /* REQ-009 — a second applicant is only ever part of a joint account. */
-  function isJoint() { return state.account === JOINT_ACCOUNT; }
-
-  /* REQ-009 / BR-06 — the joint fields are mandatory when, and only when,
-     the joint account type is the one selected. */
-  function requiredFields() {
-    return isJoint() ? ALL_FIELDS : APPLICANT_FIELDS;
+  function setFieldError(key, message) {
+    var field = FIELDS[key];
+    var wrap = wrapOf(key);
+    if (wrap) { wrap.classList.toggle('is-invalid', Boolean(message)); }
+    field.err.textContent = message || '';
+    field.input.setAttribute('aria-invalid', message ? 'true' : 'false');
   }
 
-  /* ------------------------------------------------------- field errors -- */
-
-  function errorEl(field) { return document.getElementById('e-' + field); }
-  function fieldEl(field) { return document.querySelector('.field[data-field="' + field + '"]'); }
-
-  function setFieldError(field, message) {
-    var wrap = fieldEl(field);
-    var err = errorEl(field);
-    if (!wrap || !err) { return; }
-
-    if (message) {
-      err.textContent = message;
-      err.hidden = false;
-      wrap.classList.add('is-invalid');
-      inputs[field].setAttribute('aria-invalid', 'true');
-    } else {
-      err.textContent = '';
-      err.hidden = true;
-      wrap.classList.remove('is-invalid');
-      inputs[field].removeAttribute('aria-invalid');
-    }
-    syncStackFade();          /* a message appearing changes what fits */
+  function checkField(key) {
+    var message = FIELDS[key].validate(FIELDS[key].input.value);
+    setFieldError(key, message);
+    return message;
   }
 
-  function setConsentError(message) {
-    var err = $('#e-consent');
-    if (message) {
-      err.textContent = message;
-      err.hidden = false;
-      consentBlock.classList.add('is-invalid');
-      consent.setAttribute('aria-invalid', 'true');
-    } else {
-      err.textContent = '';
-      err.hidden = true;
-      consentBlock.classList.remove('is-invalid');
-      consent.removeAttribute('aria-invalid');
+  // The summary and the standing "every field is required" line occupy the same
+  // slot, so the error messages never push the form out of the frame. Each step
+  // that can refuse input gets its own counter.
+  function alertSetter(boxId, textId, metaId) {
+    var box = document.getElementById(boxId);
+    var text = document.getElementById(textId);
+    var meta = document.getElementById(metaId);
+
+    return function (count) {
+      if (!count) {
+        box.hidden = true;
+        meta.hidden = false;
+        return;
+      }
+      text.textContent = count === 1
+        ? '1 field needs your attention.'
+        : count + ' fields need your attention.';
+      box.hidden = false;
+      meta.hidden = true;
+    };
+  }
+
+  var setAlert     = alertSetter('details-alert', 'details-alert-text', 'details-meta');
+  var setRiskAlert = alertSetter('risk-alert', 'risk-alert-text', 'risk-meta');
+
+  // ------------------------------------ REQ-009: the risk rating itself -----
+
+  function selectedRisk() {
+    for (var i = 0; i < riskInputs.length; i++) {
+      if (riskInputs[i].checked) { return riskInputs[i].value; }
     }
+    return '';
+  }
+
+  function isHighPotential() { return selectedRisk() === 'High potential'; }
+
+  function setRiskError(message) {
+    riskWrap.classList.toggle('is-invalid', Boolean(message));
+    riskErr.textContent = message || '';
+    riskInputs.forEach(function (input) {
+      input.setAttribute('aria-invalid', message ? 'true' : 'false');
+    });
+  }
+
+  function checkRisk() {
+    var message = selectedRisk()
+      ? ''
+      : 'Select a risk rating. This tells the supervisor how serious it was.';
+    setRiskError(message);
+    return message;
+  }
+
+  function syncRiskSelection() {
+    riskInputs.forEach(function (input) {
+      var option = input.closest('.risk-option');
+      if (option) { option.classList.toggle('is-selected', input.checked); }
+    });
+  }
+
+  // REQ-009: supervisor details are requested for High potential and for no
+  // other rating. What was typed is left in the fields so a mis-tap on the
+  // rating costs the reporter nothing (REQ-008), but while the block is hidden
+  // those values are neither checked nor carried onto the review screen.
+  function syncEscalation() {
+    var high = isHighPotential();
+    escalation.hidden = !high;
+    if (!high) {
+      SUPERVISOR.forEach(function (key) { setFieldError(key, ''); });
+    }
+  }
+
+  function visibleRiskFaults() {
+    var count = riskWrap.classList.contains('is-invalid') ? 1 : 0;
+    if (isHighPotential()) {
+      SUPERVISOR.forEach(function (key) {
+        if (wrapOf(key).classList.contains('is-invalid')) { count += 1; }
+      });
+    }
+    return count;
   }
 
   function clearAllErrors() {
-    ALL_FIELDS.forEach(function (f) { setFieldError(f, null); });
-    setConsentError(null);
+    ORDER.concat(SUPERVISOR).forEach(function (key) { setFieldError(key, ''); });
+    setRiskError('');
+    setAlert(0);
+    setRiskAlert(0);
   }
 
-  /* REQ-009 — reveal or retire the second applicant as the account type
-     changes. Nothing is asked for on any other account type, and any message
-     left over from a joint selection is retired with the fields. */
-  function syncJointVisibility() {
-    var joint = isJoint();
-    if (jointGroup.hidden === !joint) { return; }
-    jointGroup.hidden = !joint;
-    /* Six fields no longer fit the fixed frame, so the stack scrolls while,
-       and only while, the second applicant is being asked for. */
-    fieldStack.classList.toggle('is-scrollable', joint);
-    if (joint) {
-      revealJointGroup();
-    } else {
-      JOINT_FIELDS.forEach(function (f) { setFieldError(f, null); });
-      fieldStack.scrollTop = 0;
-    }
-    syncStackFade();
-  }
-
-  /* Choosing a joint account asks two new questions. Bring them into view
-     rather than leaving them below the fold for the customer to find. */
-  function revealJointGroup() {
-    window.requestAnimationFrame(function () {
-      var room = fieldStack.scrollHeight - fieldStack.clientHeight;
-      if (room <= 0) { return; }
-      var reduce = window.matchMedia &&
-                   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      try {
-        fieldStack.scrollTo({ top: room, behavior: reduce ? 'auto' : 'smooth' });
-      } catch (e) {
-        fieldStack.scrollTop = room;
-      }
-      syncStackFade();
-    });
-  }
-
-  /* Soften whichever edge has content beyond it, so it is obvious there is
-     more of the form than the frame can show. */
-  function syncStackFade() {
-    var scrollable = fieldStack.classList.contains('is-scrollable');
-    var room = fieldStack.scrollHeight - fieldStack.clientHeight;
-    fieldStack.classList.toggle('has-above', scrollable && fieldStack.scrollTop > 2);
-    fieldStack.classList.toggle('has-below', scrollable && fieldStack.scrollTop < room - 2);
-  }
-
-  fieldStack.addEventListener('scroll', syncStackFade);
-
-  /* REQ-004 — refuse to progress, and say which field is at fault and why. */
-  function validateDetails() {
-    var failures = [];
-    requiredFields().forEach(function (field) {
-      var message = validators[field](state[field]);
-      setFieldError(field, message);
-      if (message) { failures.push(field); }
-    });
-    return failures;
-  }
-
-  function shake(el) {
-    if (!el) { return; }
-    el.classList.remove('is-shake');
-    void el.offsetWidth;              /* force reflow so the animation replays */
-    el.classList.add('is-shake');
-  }
-
-  /* -------------------------------------------------------- form wiring -- */
-
-  function readInputs() {
-    state.name = inputs.name.value;
-    state.email = inputs.email.value;
-    state.dob = inputs.dob.value;
-    state.account = inputs.account.value;
-    state.name2 = inputs.name2.value;
-    state.email2 = inputs.email2.value;
-  }
-
-  /* REQ-008 — coming back to this step must not lose anything. */
-  function restoreInputs() {
-    inputs.name.value = state.name;
-    inputs.email.value = state.email;
-    inputs.dob.value = state.dob;
-    inputs.account.value = state.account;
-    inputs.name2.value = state.name2;
-    inputs.email2.value = state.email2;
-    consent.checked = state.consent;
-    syncJointVisibility();
-  }
-
-  /* BR-03 — nudge the typed value into DD / MM / YYYY as it is entered. */
-  function maskDob() {
-    var el = inputs.dob;
-    var atEnd = el.selectionStart === null || el.selectionStart === el.value.length;
-    var digits = el.value.replace(/\D/g, '').slice(0, 8);
-    var out = digits.slice(0, 2);
-    if (digits.length > 2) { out += ' / ' + digits.slice(2, 4); }
-    if (digits.length > 4) { out += ' / ' + digits.slice(4, 8); }
-
-    if (atEnd && out !== el.value) {
-      el.value = out;
-      try { el.setSelectionRange(out.length, out.length); } catch (e) { /* not selectable */ }
-    }
-  }
-
-  ALL_FIELDS.concat(['account']).forEach(function (field) {
-    var el = inputs[field];
-    var handler = function () {
-      if (field === 'dob') { maskDob(); }
-      readInputs();
-      if (field === 'account') { syncJointVisibility(); }
-      if (showErrors && validators[field]) {
-        setFieldError(field, validators[field](state[field]));
-      }
-    };
-    el.addEventListener('input', handler);
-    el.addEventListener('change', handler);
-  });
-
-  form.addEventListener('submit', function (event) {
-    event.preventDefault();          /* BR-05 — nothing is ever posted anywhere */
-    readInputs();
-    showErrors = true;
-
-    var failures = validateDetails();
-    if (failures.length) {
-      var first = failures[0];
-      var wrap = fieldEl(first);
-      shake(wrap);
-      /* REQ-004 — the fault has to be visible, even if it is below the fold
-         once the second applicant is on screen. */
-      if (wrap && typeof wrap.scrollIntoView === 'function') {
-        wrap.scrollIntoView({ block: 'nearest' });
-      }
-      inputs[first].focus();
-      announce(failures.length === 1
-        ? 'One field needs your attention.'
-        : failures.length + ' fields need your attention.');
-      return;
-    }
-    goTo(3);
-  });
-
-  consent.addEventListener('change', function () {
-    state.consent = consent.checked;
-    if (consent.checked) { setConsentError(null); }
-  });
-
-  /* ------------------------------------------------------------- review -- */
-
-  /* REQ-005 — play back exactly what the customer typed, never sample data.
-     REQ-009 — on a joint account that means both applicants. */
-  function renderReview() {
-    var joint = isJoint();
-
-    $('#r-name').textContent = state.name.trim();
-    $('#r-email').textContent = state.email.trim();
-    $('#r-dob').textContent = state.dob.trim();
-    $('#r-account').textContent = state.account;
-
-    $('#r-name2').textContent = joint ? state.name2.trim() : '';
-    $('#r-email2').textContent = joint ? state.email2.trim() : '';
-    $('#row-name2').hidden = !joint;
-    $('#row-email2').hidden = !joint;
-  }
-
-  /* ------------------------------------------------------- confirmation -- */
-
-  function makeAccountNumber() {
-    var digits = '';
-    for (var i = 0; i < 8; i += 1) {
-      digits += Math.floor(Math.random() * 10);
-    }
-    return {
-      bsb: '032\u2011114',
-      number: digits.slice(0, 4) + ' ' + digits.slice(4)
-    };
-  }
-
-  /* REQ-007 — new BSB and account number on the confirmation screen. */
-  function renderConfirmation() {
-    var generated = makeAccountNumber();
-    state.bsb = generated.bsb;
-    state.number = generated.number;
-
-    $('#r-account-number').textContent = state.bsb + ' \u00b7 ' + state.number;
-
-    var firstName = state.name.trim().split(/\s+/)[0];
-    $('#done-lede').textContent =
-      'Your ' + state.account + ' is open, ' + firstName +
-      '. Your digital card is ready to add to your wallet.';
-  }
-
-  $('#confirm-btn').addEventListener('click', function () {
-    /* BR-04 — the disclosure acceptance gates submission. */
-    if (!consent.checked) {
-      state.consent = false;
-      setConsentError('You need to accept the Product Disclosure Statement and Target Market Determination before we can open your account.');
-      shake(consentBlock);
-      consent.focus();
-      announce('You need to accept the Product Disclosure Statement and Target Market Determination.');
-      return;
-    }
-    state.consent = true;
-    setConsentError(null);
-    renderConfirmation();
-    goTo(4);
-  });
-
-  var toastTimer = null;
-  function showToast(message) {
-    toast.textContent = message;
-    toast.hidden = false;
-    window.clearTimeout(toastTimer);
-    toastTimer = window.setTimeout(function () { toast.hidden = true; }, 3200);
-  }
-
-  $('#wallet-btn').addEventListener('click', function () {
-    showToast('Digital card added to your Aurora wallet.');
-  });
-
-  $('#home-btn').addEventListener('click', function () {
-    resetJourney();
-  });
-
-  function resetJourney() {
-    state = blankState();
-    showErrors = false;
-    clearAllErrors();
-    restoreInputs();
-    toast.hidden = true;
-    goTo(1);
-  }
-
-  /* --------------------------------------------------------- navigation -- */
-
-  $$('[data-go]').forEach(function (el) {
-    el.addEventListener('click', function () { goTo(parseInt(el.dataset.go, 10)); });
-  });
-
-  /* REQ-008 — back, with everything still filled in. */
-  $$('[data-back]').forEach(function (el) {
-    el.addEventListener('click', function () { goTo(parseInt(el.dataset.back, 10)); });
-  });
-
-  function goTo(step) {
-    if (step === 2) { restoreInputs(); }
-    if (step === 3) { renderReview(); }
-
-    current = step;
-    screens.forEach(function (section) {
-      var isTarget = parseInt(section.dataset.screen, 10) === step;
-      section.hidden = !isTarget;
-      section.classList.toggle('is-active', isTarget);
-    });
-
-    var active = activeScreen();
-    if (step === 2) {
-      fieldStack.scrollTop = 0;    /* the form always opens at its first field */
-    }
-    syncStackFade();
-    updateTrace(active);
-    applyFit();
-    announce('Screen ' + step + ' of ' + TOTAL_STEPS + ', ' + active.dataset.name + '.');
-
-    /* Focus the heading, not the first input: it announces the step to screen
-       readers and keeps the mobile keyboard down until the customer taps. */
-    window.setTimeout(function () {
-      var target = active.querySelector('[data-focus]');
-      if (target && typeof target.focus === 'function') {
-        try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); }
-      }
-    }, 30);
-  }
-
-  function activeScreen() {
-    return screens.filter(function (s) { return !s.hidden; })[0] || screens[0];
-  }
-
-  /* ------------------------------------------- traceability to the BRD --- */
+  // ------------------------------------------------- screens and the trace --
 
   function updateTrace(section) {
     var refs = (section.getAttribute('data-req') || '')
       .split(',')
-      .map(function (r) { return r.trim(); })
+      .map(function (ref) { return ref.trim(); })
       .filter(Boolean);
 
-    traceStep.textContent = 'Screen ' + section.dataset.screen + ' of ' + TOTAL_STEPS;
-    traceName.textContent = section.dataset.name;
+    traceScreen.textContent = 'Screen ' + section.getAttribute('data-screen') +
+                              ' of ' + screens.length;
 
-    traceRefs.textContent = '';
+    while (traceChips.firstChild) { traceChips.removeChild(traceChips.firstChild); }
     refs.forEach(function (ref) {
       var chip = document.createElement('span');
-      chip.className = 'ref' + (ref.indexOf('BR-') === 0 ? ' is-rule' : '');
+      chip.className = 'trace-chip ' + (ref.indexOf('REQ') === 0 ? 'is-req' : 'is-br');
       chip.textContent = ref;
-      traceRefs.appendChild(chip);
+      traceChips.appendChild(chip);
     });
   }
 
-  traceMode.addEventListener('change', function () {
-    document.body.classList.toggle('trace-on', traceMode.checked);
-    applyFit();
-  });
+  function show(name) {
+    var next = document.getElementById('screen-' + name);
+    if (!next) { return; }
 
-  function announce(message) {
-    live.textContent = message;
+    screens.forEach(function (section) {
+      section.classList.toggle('is-active', section === next);
+    });
+    current = next;
+    updateTrace(next);
+
+    var scroller = next.querySelector('#hazard-form, #risk-form, .review-scroll');
+    if (scroller) { scroller.scrollTop = 0; }
+    syncReviewFade();
+
+    if (started) {
+      var heading = next.querySelector('[tabindex="-1"]');
+      if (heading) { heading.focus({ preventScroll: true }); }
+    }
+    started = true;
   }
 
-  /* ------------------------------------------------------------ fitting -- */
-
-  /* Keep the design system's own frame size whole on any window, without a
-     scrollbar. Dimensions come from --frame-w / --frame-h in screens.css. */
-  function applyFit() {
-    var root = window.getComputedStyle(document.documentElement);
-    var frameW = parseFloat(root.getPropertyValue('--frame-w')) || 390;
-    var frameH = parseFloat(root.getPropertyValue('--frame-h')) || 844;
-
-    var styles = window.getComputedStyle(stage);
-    var padding = parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
-    var gap = (parseFloat(styles.rowGap) || 20) * 2;
-    var chrome = stageHead.offsetHeight + traceEl.offsetHeight + padding + gap + 6;
-
-    var byHeight = (window.innerHeight - chrome) / frameH;
-    var byWidth = (window.innerWidth - 56) / frameW;
-    var fit = Math.min(1, byHeight, byWidth);
-    if (!isFinite(fit) || fit < 0.42) { fit = 0.42; }
-
-    document.documentElement.style.setProperty('--fit', (Math.floor(fit * 1000) / 1000).toString());
+  function scrollIntoViewSafely(element) {
+    if (!element) { return; }
+    var wrap = (element.closest && element.closest('.field')) || element;
+    try { wrap.scrollIntoView({ block: 'nearest' }); } catch (e) { wrap.scrollIntoView(); }
   }
 
-  var fitTimer = null;
-  window.addEventListener('resize', function () {
-    window.clearTimeout(fitTimer);
-    fitTimer = window.setTimeout(applyFit, 80);
+  // An escalated report is taller than the review area, so the declaration can
+  // start below the fold. The fade says so, and retires once it is reached.
+  function syncReviewFade() {
+    var left = reviewScroll.scrollHeight - reviewScroll.clientHeight - reviewScroll.scrollTop;
+    reviewScroll.classList.toggle('has-more', left > 4);
+  }
+
+  reviewScroll.addEventListener('scroll', syncReviewFade);
+
+  // ------------------------------------------------------------ date entry --
+  // BR-03 asks for DD / MM / YYYY, so the field formats itself as it is typed.
+
+  function maskDate(raw) {
+    var digits = String(raw).replace(/\D/g, '').slice(0, 8);
+    if (digits.length <= 2) { return digits; }
+    if (digits.length <= 4) { return digits.slice(0, 2) + ' / ' + digits.slice(2); }
+    return digits.slice(0, 2) + ' / ' + digits.slice(2, 4) + ' / ' + digits.slice(4);
+  }
+
+  function todayAsDdMmYyyy() {
+    var now = new Date();
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    return pad(now.getDate()) + ' / ' + pad(now.getMonth() + 1) + ' / ' + now.getFullYear();
+  }
+
+  FIELDS.date.input.addEventListener('input', function () {
+    var input = FIELDS.date.input;
+    var atEnd = input.selectionStart === null || input.selectionStart === input.value.length;
+    if (!atEnd) { return; }
+
+    var masked = maskDate(input.value);
+    if (masked !== input.value) {
+      input.value = masked;
+      try { input.setSelectionRange(masked.length, masked.length); } catch (e) { /* no-op */ }
+    }
   });
 
-  /* ------------------------------------------------- presenter shortcut -- */
+  document.getElementById('btn-today').addEventListener('click', function () {
+    FIELDS.date.input.value = todayAsDdMmYyyy();
+    checkField('date');
+    FIELDS.date.input.focus();
+  });
 
-  /* Press "d" on the details screen to fill it in — for live demos only. */
+  // ------------------------------------------------------- live validation --
+
+  ORDER.concat(SUPERVISOR).forEach(function (key) {
+    var field = FIELDS[key];
+
+    // clear a visible error the moment the reporter fixes it
+    field.input.addEventListener('input', function () {
+      if (wrapOf(key).classList.contains('is-invalid')) { checkField(key); }
+    });
+    field.input.addEventListener('change', function () {
+      if (wrapOf(key).classList.contains('is-invalid')) { checkField(key); }
+    });
+    // and check on leaving a field the reporter has actually used
+    field.input.addEventListener('blur', function () {
+      if (field.input.value.trim() !== '') { checkField(key); }
+    });
+  });
+
+  // REQ-009: choosing a rating reveals or withdraws the escalation block
+  riskInputs.forEach(function (input) {
+    input.addEventListener('change', function () {
+      syncRiskSelection();
+      if (riskWrap.classList.contains('is-invalid')) { checkRisk(); }
+      syncEscalation();
+      if (!riskAlert.hidden) { setRiskAlert(visibleRiskFaults()); }
+    });
+  });
+
+  // ------------------------------------------------- REQ-004: refuse to go --
+
+  function continueToRisk() {
+    var failed = [];
+    ORDER.forEach(function (key) {
+      if (checkField(key)) { failed.push(key); }
+    });
+
+    if (failed.length) {
+      setAlert(failed.length);
+      scrollIntoViewSafely(FIELDS[failed[0]].input);
+      FIELDS[failed[0]].input.focus();
+      return;
+    }
+
+    setAlert(0);
+    show('risk');
+  }
+
+  // REQ-004 again, this time over REQ-009 and BR-06
+  function continueToReview() {
+    var failures = 0;
+    var first = null;
+
+    if (checkRisk()) {
+      failures += 1;
+      first = riskInputs[0];
+    }
+
+    if (isHighPotential()) {
+      SUPERVISOR.forEach(function (key) {
+        if (checkField(key)) {
+          failures += 1;
+          if (!first) { first = FIELDS[key].input; }
+        }
+      });
+    }
+
+    if (failures) {
+      setRiskAlert(failures);
+      scrollIntoViewSafely(first);
+      first.focus();
+      return;
+    }
+
+    setRiskAlert(0);
+    fillReview();
+    show('review');
+  }
+
+  // ----------------------------------- REQ-005: show what was actually typed --
+
+  function fillReview() {
+    FIELDS.name.summary.textContent = FIELDS.name.input.value.trim();
+    FIELDS.email.summary.textContent = FIELDS.email.input.value.trim();
+    FIELDS.date.summary.textContent = FIELDS.date.input.value.trim();
+    FIELDS.category.summary.textContent = FIELDS.category.input.value;
+
+    // REQ-009: the rating every time, the supervisor only where it was asked for
+    var rating = selectedRisk();
+    while (sumRisk.firstChild) { sumRisk.removeChild(sumRisk.firstChild); }
+    var pill = document.createElement('span');
+    pill.className = 'risk-pill';
+    pill.setAttribute('data-level', rating);
+    pill.textContent = rating;
+    sumRisk.appendChild(pill);
+
+    var high = rating === 'High potential';
+    sumEscalation.hidden = !high;
+    FIELDS.supName.summary.textContent = high ? FIELDS.supName.input.value.trim() : '';
+    FIELDS.supEmail.summary.textContent = high ? FIELDS.supEmail.input.value.trim() : '';
+  }
+
+  // ------------------------------------- REQ-006 / BR-04: the declaration ----
+
+  function setSubmitState() {
+    var confirmed = declare.checked;
+    // BR-04 blocks submission, but the control stays operable and focusable so
+    // it can say why. aria-disabled would hide that explanation from anyone
+    // using a screen reader, so the state is carried on data-blocked instead.
+    submitBtn.classList.toggle('is-blocked', !confirmed);
+    submitBtn.setAttribute('data-blocked', confirmed ? 'false' : 'true');
+    if (confirmed) {
+      consentBlock.classList.remove('is-invalid');
+      declareErr.textContent = '';
+      declareErr.classList.remove('is-shown');
+    }
+  }
+
+  declare.addEventListener('change', setSubmitState);
+
+  function refuseSubmission() {
+    declareErr.textContent = 'Confirm the declaration above before you submit this report.';
+    declareErr.classList.add('is-shown');
+    consentBlock.classList.remove('is-invalid');
+    void consentBlock.offsetWidth;           // restart the nudge
+    consentBlock.classList.add('is-invalid');
+    try { consentBlock.scrollIntoView({ block: 'nearest' }); } catch (e) { /* no-op */ }
+    declare.focus();
+  }
+
+  // ---------------------------------------------- REQ-007: the confirmation --
+
+  function newHazardReference() {
+    var serial = String(Math.floor(Math.random() * 90000) + 10000);
+    return 'HZ-' + new Date().getFullYear() + '-' + serial;
+  }
+
+  function resetNotify() {
+    notifyBtn.disabled = false;
+    notifyBtn.classList.remove('is-blocked');
+    notifyBtn.textContent = 'Notify shift supervisor';
+    notifyStatus.textContent = '';
+  }
+
+  submitBtn.addEventListener('click', function () {
+    if (!declare.checked) { refuseSubmission(); return; }   // BR-04
+
+    refOut.textContent = newHazardReference();
+    resetNotify();
+    show('done');
+  });
+
+  notifyBtn.addEventListener('click', function () {
+    if (notifyBtn.disabled) { return; }
+    notifyBtn.disabled = true;
+    notifyBtn.classList.add('is-blocked');
+    notifyBtn.textContent = 'Shift supervisor notified';
+    notifyStatus.textContent =
+      '\u2713 Sent to the Pit 4 shift supervisor. Simulated for this prototype - nothing leaves this device.';
+  });
+
+  // ------------------------------------------------------------- wiring up --
+
+  document.getElementById('btn-start').addEventListener('click', function () {
+    show('details');                                        // REQ-002
+  });
+
+  // REQ-008: back to a previous step. Nothing is reset, so nothing is lost.
+  Array.prototype.forEach.call(document.querySelectorAll('[data-goto]'), function (button) {
+    button.addEventListener('click', function () {
+      show(button.getAttribute('data-goto'));
+    });
+  });
+
+  document.getElementById('btn-continue').addEventListener('click', continueToRisk);
+  document.getElementById('btn-risk-continue').addEventListener('click', continueToReview);
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();                                 // BR-05: never posts
+    continueToRisk();
+  });
+
+  riskForm.addEventListener('submit', function (event) {
+    event.preventDefault();                                 // BR-05: never posts
+    continueToReview();
+  });
+
+  document.getElementById('btn-restart').addEventListener('click', function () {
+    form.reset();
+    riskForm.reset();
+    syncRiskSelection();
+    syncEscalation();
+    clearAllErrors();
+    declare.checked = false;
+    setSubmitState();
+    resetNotify();
+    show('intro');
+  });
+
+  // ------------------------------------------ the requirement-label toggle --
+
+  toggleRefs.addEventListener('change', function () {
+    body.classList.toggle('show-refs', toggleRefs.checked);
+  });
+
+  // ------------------------------------------------------ presenter helper --
+  // "d" fills the form so a walkthrough does not depend on typing with gloves
+  // on. Ignored while a form control has focus, so it never eats a keystroke.
+
   document.addEventListener('keydown', function (event) {
     if (event.key !== 'd' && event.key !== 'D') { return; }
-    if (event.metaKey || event.ctrlKey || event.altKey) { return; }
-    if (current !== 2) { return; }
+    if (event.ctrlKey || event.metaKey || event.altKey) { return; }
 
-    var tag = (event.target.tagName || '').toLowerCase();
-    if (tag === 'input' || tag === 'select' || tag === 'textarea') { return; }
+    var target = event.target;
+    if (target && (target.isContentEditable ||
+        /^(INPUT|SELECT|TEXTAREA)$/.test(target.tagName || ''))) { return; }
 
-    event.preventDefault();
-    inputs.name.value = 'Jordan Blake';
-    inputs.email.value = 'jordan@example.com';
-    inputs.dob.value = '14 / 03 / 1991';
-    if (isJoint()) {                      /* REQ-009 — the joint pair as well */
-      inputs.name2.value = 'Sam Okafor';
-      inputs.email2.value = 'sam@example.com';
+    if (current.id === 'screen-intro') { show('details'); }
+
+    if (current.id === 'screen-details') {
+      FIELDS.name.input.value = 'Jordan Kelly';
+      FIELDS.email.input.value = 'jordan.kelly@terravale.com.au';
+      FIELDS.date.input.value = todayAsDdMmYyyy();
+      FIELDS.category.input.value = 'Vehicle and mobile plant';
+      clearAllErrors();
+      return;
     }
-    readInputs();
-    clearAllErrors();
-    announce('Demo details filled in.');
+
+    // REQ-009: the escalation path is the one worth walking through, so the
+    // helper picks High potential and names a supervisor.
+    if (current.id === 'screen-risk') {
+      document.getElementById('f-risk-high').checked = true;
+      syncRiskSelection();
+      syncEscalation();
+      FIELDS.supName.input.value = 'Priya Raman';
+      FIELDS.supEmail.input.value = 'priya.raman@terravale.com.au';
+      clearAllErrors();
+    }
   });
 
-  /* --------------------------------------------------------------- boot -- */
+  // --------------------------------------------------------------- startup --
 
-  /* Browsers restore form values on a soft reload, so read them back before
-     deciding whether the second applicant (REQ-009) belongs on screen. */
-  readInputs();
-  syncJointVisibility();
-  applyFit();
-  updateTrace(activeScreen());
-})();
+  setSubmitState();
+  syncRiskSelection();
+  syncEscalation();
+  updateTrace(current);
+}());

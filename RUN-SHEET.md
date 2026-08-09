@@ -1,4 +1,4 @@
-# 90-second run-sheet — one-page BRD → click-through prototype → revised prototype
+# 90-second run-sheet — one-page BRD → working app → revised BRD → revised app
 
 **Audience:** business analysts, product owners, designers, delivery leads — anyone
 who is *not* a developer.
@@ -31,18 +31,19 @@ Measured runtime **1:15**, leaving ~15 seconds of buffer inside a 90-second slot
 for browser focus and a question.
 
 ### 0:00 — The business asset *(15s)*
-The script opens **`brd/aurora-everyday-account-brd.html`** — BRD-2026-014 v1.0.
+The script opens **`brd/terravale-field-hazard-report-brd.html`** — BRD-2026-031 v1.0.
 
 > "One page. Eight requirements, five business rules, a sponsor, and a status of
-> *approved for build*. Your BA wrote this. Everybody in this room has signed one."
+> *approved for build*. Your BA wrote this. Everyone in this room has signed one."
 
-> "And now it sits in a queue until a developer is free. Nobody in that approval
-> chain has ever *used* the thing they approved."
+> "Today those hazards go on **paper triplicate forms** collected at end of shift.
+> Thirty-eight per cent arrive incomplete or illegible, and the supervisor hears
+> about it **nine and a half hours later**."
+
+> "And this document now waits in a queue until a developer is free."
 
 Point at **acceptance criterion 2** — *"every screen traces to at least one
 requirement reference"*. You'll cash that cheque in 30 seconds.
-
-*Design-led room instead? `.\go.ps1 -Design` opens the visual handover.*
 
 ### 0:15 — The ask *(12s)*
 The prompt appears, followed by the **measured** facts of the real run.
@@ -52,16 +53,16 @@ The prompt appears, followed by the **measured** facts of the real run.
 > screen with the requirement references it satisfies."
 
 > "One sentence. And the BRD is the input — not a spec somebody rewrote into
-> developer language first. Seventeen minutes, and it wrote and ran its own
-> browser tests: seventy-eight of them."
+> developer language first. Twenty-four minutes, and it wrote and ran its own
+> browser tests: a hundred and thirty-five of them."
 
-### 0:27 — The prototype *(26s)*
-The script opens **`prototype/index.html`**. **Drive it yourself.**
+### 0:27 — The app *(26s)*
+The script opens **`prototype/index.html`** — *Terravale Field*. **Drive it yourself.**
 
-1. Click **Get started**.
+1. **Start hazard report**.
 2. Press **`d`** to auto-fill *(or type a real audience member's name — much better)*.
-3. Clear the email, hit **Continue** — refused, with a specific message.
-4. Fix it, continue to **Review**.
+3. Clear the contact email, hit **Continue** — refused, with a specific message.
+4. Fix it, continue to **Check your report**.
 
 > "That's the name *you* gave me. REQ-005 — the review screen shows what was
 > actually entered. And look under the phone."
@@ -72,24 +73,33 @@ The script opens **`prototype/index.html`**. **Drive it yourself.**
 > the screen* and it labels them in place. That's the acceptance criterion from
 > the document — met, and checkable by the person who wrote it."
 
-### 0:53 — The revision *(22s)* — **the beat that proves the claim**
-**`brd/…-v1.1.html`** opens, then **`prototype-v2/index.html`**.
+Worth landing if you have a spare breath: *works with no mobile signal, no
+sign-in on site, reaches your shift supervisor immediately* — and the tap targets
+are that big because section 6 of the BRD says **gloves and direct sunlight**.
 
-> "Steering committee wants joint accounts. So the analyst opens the BRD and adds
-> REQ-009 and BR-06 — see the change bars. That's it. That's the whole change
-> request."
+### 0:53 — The revision *(22s)* — **the beat that proves the claim**
+**`…-brd-v1.1.html`** opens, then **`prototype-v2/index.html`**.
+
+> "After the Q3 significant-hazard review, HSE want high-potential hazards
+> escalated. So the BA opens the BRD and adds REQ-009 and BR-06 — see the change
+> bars. That's it. That's the whole change request."
 
 > "Copilot compared v1.0 to v1.1, worked out what changed, and updated the build."
 
-**Drive v2:** choose **Joint Everyday Account** → two fields appear → leave them
-blank and Continue (BR-06 refuses) → fill them → review shows **both applicants**,
-and the chips now include **REQ-009**.
+**Drive v2:** there's now a **Risk rating** step — Low / Moderate / **High
+potential** (*"could have killed or permanently injured someone"*). Choose **High
+potential** → the escalation panel appears → hit Continue with it blank (BR-06
+refuses) → fill it → the review shows a **High potential** pill and an
+**ESCALATED — SUPERVISOR NOTIFIED** block.
+
+*On the escalated review the declaration sits just below the fold — scroll to it.
+That's deliberate: there is genuinely more to confirm when a hazard is escalated.*
 
 **Close on this:**
 
 > "Nobody wrote a change request in code. The analyst changed the document they
-> already own, and the build followed it. The BRD stays the source of truth —
-> and the delivery team starts from something the business has already clicked."
+> already own, and the build followed it. Your BA takes a BRD in and gets a
+> click-through demo out — without being a developer."
 
 ---
 
@@ -98,15 +108,21 @@ and the chips now include **REQ-009**.
 | | Run 1 — build | Run 2 — revise |
 |---|---|---|
 | Input | BRD v1.0 (8 REQs, 5 BRs) | BRD v1.1 (+REQ-009, +BR-06) |
-| Wall clock | **16 min 56 sec** | **16 min 31 sec** |
-| Produced | `prototype/` — 3 files | `prototype-v2/` — +551 / −31 lines |
-| Verified | 78 checks, Chromium + installed Edge 151 | 45 checks, both browsers |
+| Wall clock | **24 min 11 sec** | **24 min 47 sec** |
+| Produced | `prototype/` — 3 files | `prototype-v2/` — new Risk rating step, +1034 / −80 |
+| Verified | 135 checks, Chromium + installed Edge | 61 checks, Chromium + installed Edge |
+| Defects it found and fixed itself | 4 | 1 |
 | Transcript | [`run-01`](./iteration/copilot-run-01-brd-to-prototype.log) | [`run-02`](./iteration/copilot-run-02-brd-v11-to-v2.log) |
 
-Both runs wrote and ran their **own** browser tests, found real defects — a
-swallowed keyboard shortcut, a 68px overflow once the joint fields appear — and
-fixed them before finishing. That detail is worth saying out loud: it did the
-checking, not just the typing.
+The defect detail is worth saying out loud — it did the **checking**, not just the
+typing:
+
+- Run 1 found that `aria-disabled` on the submit button meant the app could never
+  explain *why* it was blocked — an accessibility bug it then fixed.
+- Run 1 also caught a clipped form when all four errors showed, and three
+  traceability chips being cut off by the design system's `overflow:hidden`.
+- Run 2 measured a **102px overflow** on the escalated review screen and
+  reworked the layout rather than shipping something clipped.
 
 If you re-run either, **re-measure it** and update `$RunOne` / `$RunTwo` in
 `go.ps1`. Never quote a number you didn't take.
@@ -117,14 +133,15 @@ If you re-run either, **re-measure it** and update `$RunOne` / `$RunTwo` in
 
 | Question | Answer |
 |---|---|
-| "Did Copilot really build that from the BRD?" | Yes. Two runs, both transcripts committed in `iteration/`. Offer to open one — it shows it reading the BRD, writing the files, testing them, and fixing what it found. |
-| "Is it staged?" | The prototypes are pre-built so the run is reliable and fits the slot. The *building* was real and is evidenced. The script only opens pages and prints cues — it never fakes generation. |
-| "Why not run it live?" | You can: `.\go.ps1 -Live`. It took ~17 minutes when captured, so it's a workshop exercise, not a keynote one. |
-| "Seventeen minutes isn't instant." | No — and don't pretend otherwise. Compare it to the queue the BRD would otherwise sit in. The unit of change moved from a sprint to a coffee. |
-| "Is this production code?" | No, and the BRD says so — BR-05, and the note to delivery. It's the *starting artefact*, not the product. |
+| "Did Copilot really build that from the BRD?" | Yes. Two runs, both transcripts committed in `iteration/`. Offer to open one — it shows it reading the BRD, writing the files, testing in a browser, and fixing what it found. |
+| "Is it staged?" | The apps are pre-built so the run is reliable and fits the slot. The *building* was real and is evidenced. The script only opens pages and prints cues — it never fakes generation. |
+| "Why not run it live?" | You can: `.\go.ps1 -Live`. It took ~24 minutes when captured, so it's a workshop exercise, not a keynote one. |
+| "Twenty-four minutes isn't instant." | No — and don't pretend otherwise. Compare it to the queue the BRD would otherwise sit in, and to 9.4 hours of paper. |
+| "Is this production code?" | No, and the BRD says so — BR-05 and the note to delivery. It's the *starting artefact*, not the product. |
 | "Could my BA really do this?" | They'd need Copilot and a folder. They would not need to write code. That's the claim — no more, no less. |
-| "What about our design system?" | Section 6 of the BRD points at it, and the prototype reuses `assets/screens.css` unmodified. Point yours at your own tokens. |
-| "Can you send me the link?" | Not as-is — it runs off `file://`. Publish the static files to an approved host first. Don't promise a link the demo can't produce. |
+| "Is Terravale real?" | No. The company, the site, the reference numbers and the safety statistics are invented. Only the shape of the document is real. |
+| "What about our design system?" | Section 6 of the BRD points at it, and the app reuses `assets/screens.css` unmodified. Point yours at your own tokens. |
+| "Can you send me the link?" | Not as-is — it runs off `file://`. Publish the static files to an approved host first. |
 | "Where does the data go?" | Nowhere. BR-05. Nothing is submitted, nothing is stored, there is no backend. |
 
 ---
@@ -145,19 +162,18 @@ If you re-run either, **re-measure it** and update `$RunOne` / `$RunTwo` in
 
 ```
 .
-├── go.ps1                  the runner — this is the whole demo
+├── go.ps1                  the runner - this is the whole demo
 ├── RUN-SHEET.md            you are here
 ├── brd/
-│   ├── …-brd.html          v1.0 — the business asset the demo starts from
-│   └── …-brd-v1.1.html     v1.1 — adds REQ-009, change-barred
-├── assets/screens.css      the existing Aurora design system
-├── design/                 optional visual opener (.\go.ps1 -Design)
+│   ├── ...-brd.html        v1.0 - the business asset the demo starts from
+│   └── ...-brd-v1.1.html   v1.1 - adds REQ-009 / BR-06, change-barred
+├── assets/screens.css      the Terravale design system, reused unmodified
 ├── prototype/              built by Copilot from BRD v1.0
 ├── prototype-v2/           built by Copilot from BRD v1.1
-└── iteration/              both full session transcripts — the evidence
+└── iteration/              both full session transcripts - the evidence
 ```
 
-The BRD shares **no** stylesheet, markup or tokens with the prototype. That is
+The BRD shares **no** stylesheet, markup or tokens with the app. That is
 deliberate: the input is genuinely independent of the output, so the
 transformation is real rather than two views of the same files.
 

@@ -1,31 +1,30 @@
 /* ============================================================================
-   Aurora — shared screen design system
-   Used by BOTH design/canvas.html (static frames) and prototype/index.html
-   (the working click-through). Same pixels, two very different experiences.
-   No build step, no CDN, no fonts to download.
+   Terravale — shared mobile design system
+   The house design system referenced by section 6 of the BRD. Reused unmodified
+   by anything built from that document. No build step, no CDN, no web fonts.
    ========================================================================= */
 
 :root {
   --font-display: "Segoe UI Variable Display", "Segoe UI Variable", "Segoe UI",
                   system-ui, -apple-system, "Helvetica Neue", sans-serif;
 
-  --ink-900: #0b1020;
-  --ink-700: #1c2438;
+  --ink-900: #14202b;
+  --ink-700: #243544;
   --ink-500: #55617d;
   --ink-400: #7c88a3;
   --ink-200: #d8dfec;
   --ink-100: #eef2f9;
 
-  --brand-600: #4a32d8;
-  --brand-500: #6e56f8;
-  --brand-300: #a99bff;
-  --cyan-400: #2fb6ff;
-  --mint-400: #43e5c4;
+  --brand-600: #a6321c;
+  --brand-500: #c8442a;
+  --brand-300: #e8846a;
+  --ochre-400: #e0742c;
+  --amber-400: #f0a22e;
 
-  --aurora: linear-gradient(135deg, #6e56f8 0%, #2fb6ff 52%, #43e5c4 100%);
-  --aurora-soft: linear-gradient(135deg, rgba(110, 86, 248, .14) 0%,
-                                          rgba(47, 182, 255, .12) 52%,
-                                          rgba(67, 229, 196, .14) 100%);
+  --terra: linear-gradient(135deg, #c8442a 0%, #e0742c 52%, #f0a22e 100%);
+  --terra-soft: linear-gradient(135deg, rgba(200, 68, 42, .14) 0%,
+                                          rgba(224, 116, 44, .12) 52%,
+                                          rgba(240, 162, 46, .16) 100%);
 
   --surface: #ffffff;
   --surface-sunken: #f5f7fc;
@@ -39,8 +38,8 @@
   --radius-md: 16px;
   --radius-sm: 11px;
 
-  --shadow-card: 0 1px 2px rgba(11, 16, 32, .05), 0 8px 24px rgba(11, 16, 32, .06);
-  --shadow-cta: 0 8px 20px rgba(110, 86, 248, .34);
+  --shadow-card: 0 1px 2px rgba(20, 32, 43, .05), 0 8px 24px rgba(20, 32, 43, .06);
+  --shadow-cta: 0 8px 20px rgba(200, 68, 42, .34);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -127,7 +126,7 @@
   font-weight: 700;
 }
 .display .grad {
-  background: var(--aurora);
+  background: var(--terra);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -181,7 +180,7 @@
   display: block;
   height: 100%;
   border-radius: 3px;
-  background: var(--aurora);
+  background: var(--terra);
   transition: width .38s cubic-bezier(.4, 0, .2, 1);
 }
 .step-count {
@@ -206,8 +205,8 @@
 .brandmark .glyph {
   width: 26px; height: 26px;
   border-radius: 8px;
-  background: var(--aurora);
-  box-shadow: 0 3px 10px rgba(110, 86, 248, .38);
+  background: var(--terra);
+  box-shadow: 0 3px 10px rgba(200, 68, 42, .38);
 }
 
 /* ------------------------------------------------------------- screen 1 --- */
@@ -218,7 +217,7 @@
   min-height: 0;
   margin: 20px -6px 0;
   border-radius: 24px;
-  background: var(--aurora-soft);
+  background: var(--terra-soft);
   border: 1px solid var(--hairline);
   overflow: hidden;
 }
@@ -228,9 +227,9 @@
   filter: blur(28px);
   opacity: .82;
 }
-.hero-art .orb-a { width: 190px; height: 190px; top: -46px; left: -34px;  background: #6e56f8; }
-.hero-art .orb-b { width: 160px; height: 160px; bottom: -44px; right: -30px; background: #43e5c4; }
-.hero-art .orb-c { width: 130px; height: 130px; top: 92px; right: 22px;   background: #2fb6ff; opacity: .55; }
+.hero-art .orb-a { width: 190px; height: 190px; top: -46px; left: -34px;  background: #c8442a; }
+.hero-art .orb-b { width: 160px; height: 160px; bottom: -44px; right: -30px; background: #f0a22e; }
+.hero-art .orb-c { width: 130px; height: 130px; top: 92px; right: 22px;   background: #e0742c; opacity: .55; }
 
 .hero-card {
   position: absolute;
@@ -265,7 +264,7 @@
   margin-top: 12px;
   height: 6px;
   border-radius: 3px;
-  background: var(--aurora);
+  background: var(--terra);
   opacity: .9;
 }
 
@@ -290,7 +289,7 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: rgba(67, 229, 196, .2);
+  background: rgba(240, 162, 46, .22);
   color: var(--success);
   font-size: 12px;
   font-weight: 800;
@@ -409,11 +408,11 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: var(--aurora);
+  background: var(--terra);
   color: #fff;
   font-size: 42px;
   font-weight: 800;
-  box-shadow: 0 14px 34px rgba(110, 86, 248, .4);
+  box-shadow: 0 14px 34px rgba(200, 68, 42, .40);
   margin-bottom: 20px;
 }
 .done-body .display { font-size: 30px; }
@@ -464,7 +463,7 @@
   cursor: pointer;
 }
 .btn-primary {
-  background: var(--aurora);
+  background: var(--terra);
   color: #fff;
   box-shadow: var(--shadow-cta);
 }

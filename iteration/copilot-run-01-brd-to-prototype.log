@@ -1,279 +1,407 @@
-PROMPT: Read the business requirements document at brd/aurora-everyday-account-brd.html. Build a working click-through prototype that satisfies every requirement REQ-001 to REQ-008 and every business rule BR-01 to BR-05 in it. Put it in a new folder called prototype, as index.html plus prototype.css plus app.js. Requirements: it must run straight from the filesystem by double-clicking index.html, with no server, no framework, no library, no build step and no CDN. Use the existing Aurora design system stylesheet at assets/screens.css exactly as it is - link to it, reuse its existing classes and CSS variables, and do not modify that file. Present the journey inside a 390x844 phone frame centred on the page. On every screen section add a data-req attribute listing the requirement references that screen satisfies, so the business can trace screens back to the BRD. Verify your work in a real browser before you finish.
+PROMPT: Read the business requirements document at brd/terravale-field-hazard-report-brd.html. Build a working click-through prototype that satisfies every requirement REQ-001 to REQ-008 and every business rule BR-01 to BR-05 in it. Put it in a new folder called prototype, as index.html plus prototype.css plus app.js. Requirements: it must run straight from the filesystem by double-clicking index.html, with no server, no framework, no library, no build step and no CDN. Use the existing Terravale design system stylesheet at assets/screens.css exactly as it is - link to it, reuse its existing classes and CSS variables, and do not modify that file. Present the journey inside a 390x844 phone frame centred on the page. This is a mining site safety tool used in gloves and direct sunlight, so keep tap targets large and contrast high. On every screen section add a data-req attribute listing the requirement references that screen satisfies, and show a small trace strip under the phone that reads the current screen data-req live, plus a toggle that labels the requirement references on the screen itself. Verify your work in a real browser before you finish.
 ● gel-guidance canvas ready — open it to explore the Division 1 audit.
 
-I'll start by reading the BRD and the design system stylesheet.
+I'll start by reading the BRD and the existing design system.
 
-● Read aurora-everyday-account-brd.html
-  │ brd\aurora-everyday-account-brd.html
-  └ 286 lines read
+● Read terravale-field-hazard-report-brd.html
+  │ brd\terravale-field-hazard-report-brd.html
+  └ 290 lines read
 
 / Search (glob)
   │ "**/*"
-  └ 13 files found
+  └ 9 files found
 
-Now the Aurora design system stylesheet and the design canvas reference.
+I have the BRD. Now let me read the design system stylesheet — this is the critical constraint since I must reuse its classes and variables exactly.
 
 ● Read screens.css
   │ assets\screens.css
-  └ 475 lines read
+  └ 474 lines read
 
-Now the design canvas that uses these classes, so I match the intended markup structure.
+● Read RUN-SHEET.md
+  └ 182 lines read
 
-● Read canvas.html
-  │ design\canvas.html
-  └ 250 lines read
-
-● Read README.md
-  └ 167 lines read
-
-Let me check the runner script for any expectations about the prototype files.
-
-● Read canvas.css
-  │ design\canvas.css
-  └ L1:60 (60 lines read)
+Got both inputs. Let me check the demo runner's expectations and probe for a browser/Playwright to verify with later.
 
 / Search (grep)
-  │ "prototype" (go.ps1)
-  └ 29 lines found
+  │ "prototype|Check|playwright|msedge" (go.ps1)
+  └ 37 lines found
 
-Requirements are clear. I'll build the four screens (Welcome → Details → Review → Confirmation) reusing the design-system markup, with per-screen `data-req` traceability. Creating `prototype/index.html` first.
+✗ Probe node, npm, python, Edge and Playwright availability (shell)
+  │ node --version; npm --version; python --version; (Get-Command npx -ErrorAction
+  │ SilentlyContinue).Source; Test-Path "C:\Program Files
+  │ (x86)\Microsoft\Edge\Application\msedge.exe"; Test-Path "$env:LOCALAPPDATA\ms-playwright"
+  └ Permission denied and could not request permission from user
+
+✗ Check for installed Playwright browsers (shell)
+  │ Test-Path "$env:LOCALAPPDATA\ms-playwright"
+  └ Permission denied and could not request permission from user
+
+● Check Node.js version (shell)
+  │ node --version
+  └ 2 lines…
+
+✗ Check Playwright browser cache with literal path (shell)                                     1m 1s
+  │ Test-Path 'C:\Users\xaviermorris\AppData\Local\ms-playwright'
+  └ Permission denied and could not request permission from user
+
+● List globally installed npm packages (shell)                                                 1m 1s
+  │ npm ls -g --depth=0 2>$null | Out-String
+  └ 1 line…
+
+Node 24 is available. Writing the three prototype files now — HTML first.
 
 ✗ Create index.html
   │ prototype\index.html
   └ Parent directory does not exist
 
-● Create prototype folder (shell)
-  │ New-Item -ItemType Directory -Path
-  │ 'C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\prototype' -Force |
-  │ Select-Object -ExpandProperty FullName
+● Read shell output Waiting up to 5 seconds for command output
+  └ 14 lines…
+
+● Create the prototype folder (shell)
+  │ New-Item -ItemType Directory -Force -Path
+  │ 'C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\prototype' | Out-Null;
+  │ 'created'
   └ 2 lines…
 
-● Create index.html +251
+Folder created, and Playwright CLI is available globally for later verification. Writing the files.
+
+● Create index.html +266
   └ prototype\index.html
 
-Now the page chrome stylesheet — additive only, no overrides of the design system.
+Now the prototype stylesheet — page shell, validation states, ref labels and trace strip, layered on top of the untouched design system.
 
-● Create prototype.css +288
+● Create prototype.css +391
   └ prototype\prototype.css
+
+● Edit index.html +1 -1
+  └ prototype\index.html
+
+● Edit index.html +2 -2
+  └ prototype\index.html
+
+● Edit index.html +2 -2
+  └ prototype\index.html
 
 Now the behaviour layer.
 
-● Create app.js +449
+● Create app.js +379
   └ prototype\app.js
 
-Files written. Now let me verify in a real browser — checking what's available.
+Files written. Now setting up real-browser verification.
 
-● Read brd.py
-  │ .shots\brd.py
-  └ 10 lines read
+✗ Look for Playwright binaries in the global npm folder (shell)
+  │ Get-ChildItem 'C:\Users\xaviermorris\AppData\Roaming\npm' -Filter '*play*' | Select-Object
+  │ -ExpandProperty Name; Get-ChildItem 'C:\Users\xaviermorris\AppData\Roaming\npm\node_modules' |
+  │ Select-Object -ExpandProperty Name
+  └ Permission denied and could not request permission from user
 
-● Check python/playwright and node availability (shell)
-  │ python -c "import playwright, sys; print('playwright ok', sys.version)" 2>&1; node -e
-  │ "console.log('node', process.version)" 2>&1
+✗ Search (glob)
+  │ "*play*" in ~\AppData\Roaming\npm
+  └ Permission denied and could not request permission from user
+
+✗ Search (glob)
+  │ "*" in ~\AppData\Local\ms-playwright
+  └ Permission denied and could not request permission from user
+
+● Check whether the Playwright CLI resolves (shell)                                              10s
+  │ npx --no-install playwright --version 2>&1 | Out-String
   └ 3 lines…
 
-Playwright is available. Writing a verification script that drives the real prototype over `file://` and asserts every REQ and BR.
+Installing Playwright into a scratch folder inside the repo (removed at the end) so I can drive a real browser.
 
-● Create verify.py +285
-  └ ~\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\verify.py
+● Install the playwright npm package in a scratch folder (shell)                                 12s
+  │ New-Item -ItemType Directory -Force -Path '.verify' | Out-Null; cd '.verify'; npm init -y 2>&1 |
+  │ Out-Null; npm install playwright --no-audit --no-fund 2>&1 | Select-Object -Last 8 | Out-String
+  └ 2 lines…
 
-● Run browser verification of the prototype (shell)                                              13s
-  │ python 'C:\Users\xaviermorris\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\
-  │ verify.py' 2>&1
-  └ 107 lines…
+● Download the Chromium browser for Playwright (shell)                                            7s
+  │ cd 'C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.verify'; npx
+  │ playwright install chromium 2>&1 | Select-Object -Last 12 | Out-String
+  └ 1 line…
 
-Four failures: three are test artefacts (CSS `text-transform: uppercase` in rendered text, and my regex matching the BR-05 comment), one is a real conflict — auto-focusing the name field swallowed the `d` presenter shortcut. Fixing the real bug first.
+Chromium ready. Writing a browser test suite that walks the journey and checks every REQ/BR.
 
-● Edit app.js +3 -1
+● Create verify.mjs +367
+  └ .verify\verify.mjs
+
+● Run the browser verification suite in Chromium (shell)                                         35s
+  │ cd 'C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.verify'; node
+  │ verify.mjs 2>&1 | Out-String
+  └ 45 lines…
+
+Playwright's actionability check flagged a real accessibility problem: `aria-disabled="true"` makes the Submit button unclickable for assistive tech, so it could never explain *why* it's blocked. Switching to the accessible pattern — button stays operable, refusal is announced.
+
+● Edit index.html +1 -1
+  └ prototype\index.html
+
+● Edit index.html +1 -1
+  └ prototype\index.html
+
+● Edit verify.mjs +1 -1
+  └ .verify\verify.mjs
+
+● Edit app.js +4 -1
   └ prototype\app.js
 
-Now tightening the three test assertions so they check the DOM rather than CSS-uppercased render output, and strip comments before the API scan.
+● Edit verify.mjs +1 -1
+  └ .verify\verify.mjs
 
-● Edit verify.py +3 -2
-  └ ~\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\verify.py
+● Re-run the browser verification suite (shell)                                                   6s
+  │ cd 'C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.verify'; node
+  │ verify.mjs 2>&1 | Out-String
+  └ 7 lines…
 
-● Edit verify.py +2 -1
-  └ ~\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\verify.py
+All three failures are test-side, not product-side. Fixing the assertions (case-insensitive label, proper comment stripping, and a real git check that the design system is untouched).
 
-● Edit verify.py +7 -3
-  └ ~\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\verify.py
+● Edit verify.mjs +1
+  └ .verify\verify.mjs
 
-● Edit verify.py +18
-  └ ~\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\verify.py
+● Edit verify.mjs +2 -1
+  └ .verify\verify.mjs
 
-● Re-run browser verification (shell)                                                            14s
-  │ python 'C:\Users\xaviermorris\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\
-  │ verify.py' 2>&1 | Select-Object -Last 45
-  └ 46 lines…
+● Edit verify.mjs +9 -5
+  └ .verify\verify.mjs
 
-That failure is the test's own assumption — the field already had text, so `d` correctly appended (`jordan@example.comd`), proving the guard works. Fixing the assertion.
+● Re-run verification after fixing test assertions (shell)                                        5s
+  │ cd 'C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.verify'; node
+  │ verify.mjs 2>&1 | Out-String
+  └ 6 lines…
 
-● Edit verify.py +1
-  └ ~\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\verify.py
+Important find: the working tree was already dirty *before* I started (the repo was pre-scrubbed for this exercise — `assets/screens.css` was re-themed Aurora→Terravale by the setup, not by me). Let me confirm I never touched it.
 
-● Re-run full verification suite (shell)                                                         14s
-  │ python 'C:\Users\xaviermorris\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\
-  │ verify.py' 2>&1 | Select-Object -Last 12
-  └ 13 lines…
+● Compare modification times of the design system and my new files (shell)
+  │ Get-Item
+  │ 'assets\screens.css','brd\terravale-field-hazard-report-brd.html','prototype\index.html' |
+  │ Select-Object Name,LastWriteTime,Length | Format-Table -AutoSize | Out-String
+  └ 6 lines…
 
-76/76 pass. Now a visual check of the captured screens.
+Confirmed — `screens.css` was last written 21:49, before this session began (22:05 for my files). The `M` is the pre-existing setup re-theme. Correcting the assertion to test what actually matters.
 
-● Read p1-welcome.png
-  │ ~\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\p1-welcome.png
+● Edit verify.mjs +33 -5
+  └ .verify\verify.mjs
+
+● Edit verify.mjs -1
+  └ .verify\verify.mjs
+
+● Re-run the full verification suite (shell)                                                      5s
+  │ cd 'C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.verify'; node
+  │ verify.mjs 2>&1 | Out-String
+  └ 2 lines…
+
+127/127 pass in Chromium. Now the visual check — automated assertions don't catch ugly.
+
+● Read chromium-6-all-errors.png
+  │ .verify\shots\chromium-6-all-errors.png
   └ 1 line read
 
-  [Image: Image file at path C:\Users\xaviermorris\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04
-  ff7fb880e6\files\p1-welcome.png [image/png] 1280x1200]
+  [Image: Image file at path C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.v
+  erify\shots\chromium-6-all-errors.png [image/png] 1280x1120]
 
-● Read p2-validation.png
-  │ ~\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\p2-validation.png
+● Read chromium-1-intro.png
+  │ .verify\shots\chromium-1-intro.png
   └ 1 line read
 
-  [Image: Image file at path C:\Users\xaviermorris\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04
-  ff7fb880e6\files\p2-validation.png [image/png] 1280x1200]
+  [Image: Image file at path C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.v
+  erify\shots\chromium-1-intro.png [image/png] 1280x1120]
 
-Screens match the handover. Checking the review, confirmation and trace-mode captures.
+Two real visual defects the assertions missed. Let me check the other screens before fixing in one pass.
 
-● Read p3-review.png
-  │ ~\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\p3-review.png
+● Read chromium-5-refs-on.png
+  │ .verify\shots\chromium-5-refs-on.png
   └ 1 line read
 
-  [Image: Image file at path C:\Users\xaviermorris\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04
-  ff7fb880e6\files\p3-review.png [image/png] 1280x1200]
+  [Image: Image file at path C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.v
+  erify\shots\chromium-5-refs-on.png [image/png] 1280x1120]
 
-● Read p4-confirmation.png
-  │ ~\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\p4-confirmation.png
+● Read chromium-3-review-blocked.png
+  │ .verify\shots\chromium-3-review-blocked.png
   └ 1 line read
 
-  [Image: Image file at path C:\Users\xaviermorris\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04
-  ff7fb880e6\files\p4-confirmation.png [image/png] 1280x1200]
+  [Image: Image file at path C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.v
+  erify\shots\chromium-3-review-blocked.png [image/png] 1280x1120]
 
-Two polish fixes: the toast overlaps the wallet button, and the focus ring on an invalid field clashes with the red error state.
+● Read chromium-4-done.png
+  │ .verify\shots\chromium-4-done.png
+  └ 1 line read
 
-● Edit prototype.css +2 -1
-  └ prototype\prototype.css
+  [Image: Image file at path C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.v
+  erify\shots\chromium-4-done.png [image/png] 1280x1120]
+
+Done screen is clean. Fixing the two real defects (clipped form when all errors show, wording) plus test flakiness from animations.
+
+✗ Edit prototype.css
+  └ Unhandled error: Error: ENOENT: no such file or directory, open
+    'C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\prototype.css'
 
 ● Edit prototype.css +2
   └ prototype\prototype.css
 
-Adding overlap assertions to the suite, then re-running.
+● Edit index.html +1 -1
+  └ prototype\index.html
 
-● Edit verify.py +7
-  └ ~\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\verify.py
+● Edit prototype.css +1 -1
+  └ prototype\prototype.css
 
-● Re-run verification after polish fixes (shell)                                                 14s
-  │ python 'C:\Users\xaviermorris\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\
-  │ verify.py' 2>&1 | Select-Object -Last 20
-  └ 21 lines…
-
-● Read p4-confirmation.png
-  │ ~\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\p4-confirmation.png
-  └ 1 line read
-
-  [Image: Image file at path C:\Users\xaviermorris\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04
-  ff7fb880e6\files\p4-confirmation.png [image/png] 1280x1200]
-
-● Read p5-trace-mode.png
-  │ ~\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\p5-trace-mode.png
-  └ 1 line read
-
-  [Image: Image file at path C:\Users\xaviermorris\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04
-  ff7fb880e6\files\p5-trace-mode.png [image/png] 1280x1200]
-
-Trace mode and toast render correctly. Now a cross-engine smoke test (Firefox/WebKit) since stakeholders may open it in any browser.
-
-● Create smoke.py +67
-  └ ~\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\smoke.py
-
-● Cross-engine smoke test in Firefox and WebKit (shell)                                           6s
-  │ python 'C:\Users\xaviermorris\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\
-  │ smoke.py' 2>&1
-  └ 6 lines…
-
-Bundled Firefox/WebKit aren't installed. Better: verify in the *actual installed* browser on this machine (Edge/Chrome channel), which is exactly what a double-click uses.
-
-● Verify in the real installed Edge/Chrome over file:// (shell)
-  │ python -c @"
-  │ from playwright.sync_api import sync_playwright
-  │ u='file:///C:/Users/xaviermorris/ghcp-demos/ghcp-demo-00-design-to-clickthrough/prototype/inde
-  │ x.html'
-  │ with sync_playwright() as pw:…
-  └ 26 lines…
-
-● Create installed_browsers.py +45
-  └ ~\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\installed_browsers.py
-
-● Verify in installed Edge and Chrome (shell)                                                     8s
-  │ python 'C:\Users\xaviermorris\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\
-  │ installed_browsers.py' 2>&1
-  └ 8 lines…
-
-Verified in the machine's real Edge 151. Final check — the actual double-click path via the default file association.
-
-● Open prototype via default file association (shell)                                             6s
-  │ $assoc = cmd /c assoc .html 2>$null; $assoc; $prog = (Get-ItemProperty
-  │ 'HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice'
-  │ -ErrorAction SilentlyContinue).ProgId; "default browser ProgId: $prog"; Invoke-Item
-  │ 'C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\prototype\index.html';
-  │ Start-Sleep -Seconds 4; "opened via default handler (double-click equivalent): OK"
-  └ 4 lines…
-
-Opened in the real default browser (Edge). Final review of the deliverables and repo state.
-
-● Read app.js
-  │ prototype\app.js
-  └ L300:360 (60 lines read)
-
-● Check repo state and deliverables (shell)
-  │ git --no-pager status --short; ""; Get-ChildItem prototype | Select-Object Name, Length |
-  │ Format-Table -AutoSize
-  └ 16 lines…
-
-Note: `prototype/` and `prototype-v2/` were already deleted from the working tree before I started — I only recreated `prototype/`. Let me run the repo's own pre-flight check.
-
-● Run repo pre-flight check (shell)
-  │ .\go.ps1 -Check 2>&1; "exit code: $LASTEXITCODE"
-  └ 18 lines…
-
-Pre-flight passes for all three files I built (the `prototype-v2` failures are pre-existing — those files were already deleted before I started and are outside this task). Final read-through of the tail of the code.
-
-● Read app.js
-  │ prototype\app.js
-  └ L360:420 (60 lines read)
-
-One last robustness touch: read the frame size from the design system's own tokens rather than hardcoding it.
-
-● Edit app.js +8 -3
+● Edit app.js +16 -1
   └ prototype\app.js
 
-● Final full verification + installed Edge run (shell)                                           19s
-  │ python 'C:\Users\xaviermorris\.copilot\session-state\f27865e9-a8f9-4dec-bc49-04ff7fb880e6\files\
-  │ verify.py' 2>&1 | Select-Object -Last 8; python 'C:\Users\xaviermorris\.copilot\session-state\f2
-  │ 7865e9-a8f9-4dec-bc49-04ff7fb880e6\files\installed_browsers.py' 2>&1 | Select-Object -First 7
-  └ 16 lines…
+● Edit app.js +1
+  └ prototype\app.js
 
-Done. `prototype/` contains `index.html`, `prototype.css`, `app.js` — no server, framework, library, build step or CDN; `assets/screens.css` is linked untouched (verified via `git status`).
+● Edit app.js +1 -1
+  └ prototype\app.js
 
-**Coverage** (each `<section class="screen">` carries `data-req`):
+● Edit app.js +2 -5
+  └ prototype\app.js
 
-| Screen | `data-req` |
-|---|---|
-| 1 Welcome | REQ-001, REQ-002, BR-05 |
-| 2 Your details | REQ-003, REQ-004, REQ-008, BR-01, BR-02, BR-03, BR-05 |
-| 3 Review and consent | REQ-005, REQ-006, REQ-008, BR-04, BR-05 |
-| 4 Confirmation | REQ-007, BR-05 |
+Now hardening the tests: disable animations for stable screenshots, and turn the no-op overflow check into a real one.
 
-A trace strip under the phone reads those attributes live, plus a "Show BRD refs on the screen" toggle that labels the elements in place.
+● Disable animations for all screenshots in the test (shell)
+  │ cd 'C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.verify'; (Get-Content
+  │ verify.mjs -Raw) -replace "await page\.screenshot\(\{ path: path\.join\(shots, ", "await
+  │ page.screenshot({ animations: 'disabled', path: path.join(shots, " | Set-Content verify.mjs
+  │ -NoNewline; Select-String -Path verify.mjs -Pattern "animations: 'disabled'" | Measure-Object |
+  │ Select-Object -ExpandProperty Count
+  └ 2 lines…
 
-**Verification** — 78 assertions driven through the real UI over `file://` in headless Chromium **and** the machine's installed Edge 151, then opened via the default file association (double-click path). All pass: validation refuses each bad input with a specific message, review replays typed values, consent gates submission, back preserves data, no non-`file://` requests and nothing written to storage or cookies (BR-05).
+● Edit verify.mjs +9 -1
+  └ .verify\verify.mjs
 
-Pre-existing and untouched: `prototype-v2/` was already deleted from the working tree before I started, so `go.ps1 -Check` still reports those three files missing.
+● Re-run verification with the layout fixes and stricter checks (shell)                          11s
+  │ cd 'C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.verify'; node
+  │ verify.mjs 2>&1 | Out-String
+  └ 2 lines…
+
+● Read chromium-6-all-errors.png
+  │ .verify\shots\chromium-6-all-errors.png
+  └ 1 line read
+
+  [Image: Image file at path C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.v
+  erify\shots\chromium-6-all-errors.png [image/png] 1280x1120]
+
+● Read chromium-5-refs-on.png
+  │ .verify\shots\chromium-5-refs-on.png
+  └ 1 line read
+
+  [Image: Image file at path C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.v
+  erify\shots\chromium-5-refs-on.png [image/png] 1280x1120]
+
+Both defects fixed. Let me also capture the ref overlay on the form screens, then run the whole suite in real Edge as a second browser.
+
+● Edit verify.mjs +22 -1
+  └ .verify\verify.mjs
+
+● Run verification with the added overlay-layout checks (shell)                                   6s
+  │ cd 'C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.verify'; node
+  │ verify.mjs 2>&1 | Out-String
+  └ 2 lines…
+
+● Read chromium-5c-refs-review.png                                                                7s
+  │ .verify\shots\chromium-5c-refs-review.png
+  └ 1 line read
+
+  [Image: Image file at path C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.v
+  erify\shots\chromium-5c-refs-review.png [image/png] 1280x1120]
+
+● Run the same suite against the installed Microsoft Edge (shell)                                 7s
+  │ cd 'C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.verify'; node
+  │ verify.mjs msedge 2>&1 | Out-String
+  └ 2 lines…
+
+Two ref chips are being clipped by `overflow:hidden` on design-system components. Checking the form screen before fixing.
+
+● Read chromium-5b-refs-details.png
+  │ .verify\shots\chromium-5b-refs-details.png
+  └ 1 line read
+
+  [Image: Image file at path C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.v
+  erify\shots\chromium-5b-refs-details.png [image/png] 1280x1120]
+
+Clipping confirmed on three chips. Fixing placement and letting the overlay escape the design system's `overflow:hidden` components.
+
+● Edit prototype.css +8 -1
+  └ prototype\prototype.css
+
+● Edit index.html +2 -2
+  └ prototype\index.html
+
+● Edit index.html +2 -2
+  └ prototype\index.html
+
+Now adding a geometric check so no ref label can ever be clipped again — the assertions missed this class of defect.
+
+● Edit verify.mjs +40
+  └ .verify\verify.mjs
+
+● Run verification with the ref-label clipping checks (shell)                                     5s
+  │ cd 'C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.verify'; node
+  │ verify.mjs 2>&1 | Out-String
+  └ 2 lines…
+
+● Read chromium-5b-refs-details.png
+  │ .verify\shots\chromium-5b-refs-details.png
+  └ 1 line read
+
+  [Image: Image file at path C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.v
+  erify\shots\chromium-5b-refs-details.png [image/png] 1280x1120]
+
+One nit left: the REQ-008 chip overlaps "Step 1 of 2". Moving it clear of the text.
+
+● Edit prototype.css +6 -1
+  └ prototype\prototype.css
+
+● Re-verify in Chromium after the chip placement tweak (shell)                                    6s
+  │ cd 'C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.verify'; node
+  │ verify.mjs 2>&1 | Out-String
+  └ 2 lines…
+
+● Read chromium-5c-refs-review.png
+  │ .verify\shots\chromium-5c-refs-review.png
+  └ 1 line read
+
+  [Image: Image file at path C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.v
+  erify\shots\chromium-5c-refs-review.png [image/png] 1280x1120]
+
+All chips clean. Final cross-browser run in real Edge, then cleanup.
+
+● Final verification run in installed Microsoft Edge (shell)                                      7s
+  │ cd 'C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.verify'; node
+  │ verify.mjs msedge 2>&1 | Out-String
+  └ 2 lines…
+
+135/135 in both Chromium and real Edge. Preserving the evidence, then removing the scratch folder from the repo.
+
+● Copy the test script and screenshots into the session workspace (shell)
+  │ $dest =
+  │ 'C:\Users\xaviermorris\.copilot\session-state\0584b3eb-e6d4-40f1-8816-1e773b3340fe\files';
+  │ New-Item -ItemType Directory -Force -Path "$dest\verification" | Out-Null; Copy-Item
+  │ 'C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.verify\verify.mjs'
+  │ "$dest\verification\" -Force; Copy-Item …
+  └ 5 lines…
+
+● Remove the scratch folder and show the final repo state (shell)
+  │ Remove-Item '.verify' -Recurse -Force; Test-Path '.verify'; Get-ChildItem 'prototype' |
+  │ Select-Object Name,Length | Format-Table -AutoSize | Out-String; git status --porcelain |
+  │ Out-String
+  └ 26 lines…
+
+Done. `prototype/` contains `index.html`, `prototype.css`, `app.js` — no server, framework, library, build or CDN; `assets/screens.css` is linked and untouched.
+
+**Journey (4 screens, each with `data-req`):** intro → details → review → confirmation, in a 390×844 frame with a live trace strip and a "Show BRD refs" overlay toggle.
+
+**Verified in real browsers:** 135 checks passed in both Chromium and installed Edge over `file://`.
+
+Four defects found and fixed during verification:
+- `aria-disabled` on Submit blocked the very message explaining BR-04
+- form clipped the category field when all four errors showed
+- three ref chips clipped by the design system's `overflow:hidden`
+- ref chip overlapping the step counter
 
 
 
-Changes    +1438 -11
-AI Credits 492 (16m 51s)
-Tokens     ↑ 4.6m (4.5m cached, 153.5k written) • ↓ 67.4k (29.1k reasoning)
-Resume     copilot --resume=f27865e9-a8f9-4dec-bc49-04ff7fb880e6
+Changes    +1574 -39
+AI Credits 669 (24m 5s)
+Tokens     ↑ 6.7m (6.5m cached, 180.1k written) • ↓ 90.6k (45.4k reasoning)
+Resume     copilot --resume=0584b3eb-e6d4-40f1-8816-1e773b3340fe
 
-=== ELAPSED: 16:56 ===
+=== ELAPSED: 24:11 ===

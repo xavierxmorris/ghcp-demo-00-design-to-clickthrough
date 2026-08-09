@@ -1,456 +1,395 @@
 /* ============================================================================
-   Aurora — Everyday Account, click-through prototype
-   BRD-2026-014 v1.0
+   Terravale Field - hazard and safety observation reporting
+   Click-through prototype for BRD-2026-031 v1.0.
 
-   Traceability
-     REQ-001  intro screen, account name + three headline benefits   screen 1
-     REQ-002  start the application in a single action               screen 1
-     REQ-003  capture name, email, date of birth, account type       screen 2
-     REQ-004  block progression, say which field and why             screen 2
-     REQ-005  review every entered value before submission           screen 3
-     REQ-006  explicit PDS + TMD acceptance                          screen 3
-     REQ-007  confirmation with BSB / account number + wallet        screen 4
-     REQ-008  progress indicator and lossless back navigation        screens 2-4
-     BR-01    full name mandatory, at least two characters
-     BR-02    email mandatory, structurally valid
-     BR-03    date of birth mandatory, DD / MM / YYYY
-     BR-04    no submission until the disclosure acceptance is given
-     BR-05    nothing is transmitted or stored
-
-   BR-05 is enforced by construction: there is no fetch, no XMLHttpRequest, no
-   form action, no cookie, no localStorage and no sessionStorage anywhere in
-   this file. Every value lives in the `state` object below, inside this
-   closure, and dies with the browser tab.
+   BR-05: nothing here transmits or stores anything. There is no fetch, no
+   XMLHttpRequest, no localStorage, no sessionStorage and no cookie. Entered
+   values live in the DOM for the length of the visit and nowhere else.
    ========================================================================= */
 
 (function () {
   'use strict';
 
-  var TOTAL_STEPS = 4;
+  // ------------------------------------------------------------- elements --
 
-  /* ------------------------------------------------------------- state --- */
+  var body        = document.body;
+  var screens     = Array.prototype.slice.call(document.querySelectorAll('.screen'));
+  var form        = document.getElementById('hazard-form');
+  var alertBox    = document.getElementById('details-alert');
+  var alertText   = document.getElementById('details-alert-text');
+  var detailsMeta = document.getElementById('details-meta');
 
-  function blankState() {
-    return {
-      name: '',
-      email: '',
-      dob: '',
-      account: 'Everyday Account',
-      consent: false,
-      bsb: '',
-      number: ''
-    };
-  }
+  var declare      = document.getElementById('f-declare');
+  var consentBlock = document.getElementById('consent-block');
+  var declareErr   = document.getElementById('e-declare');
+  var submitBtn    = document.getElementById('btn-submit');
 
-  var state = blankState();
-  var current = 1;
-  var showErrors = false;   /* only nag after the customer has tried to continue */
+  var refOut       = document.getElementById('hazard-ref');
+  var notifyBtn    = document.getElementById('btn-notify');
+  var notifyStatus = document.getElementById('notify-status');
 
-  /* ------------------------------------------------------------- lookup -- */
+  var traceScreen = document.getElementById('trace-screen');
+  var traceChips  = document.getElementById('trace-chips');
+  var toggleRefs  = document.getElementById('toggle-refs');
 
-  var $ = function (sel) { return document.querySelector(sel); };
-  var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+  var current = document.querySelector('.screen.is-active') || screens[0];
+  var started = false;
 
-  var screens   = $$('.screen');
-  var stage     = $('.stage');
-  var stageHead = $('.stage-head');
-  var traceEl   = $('.trace');
-  var traceStep = $('#trace-step');
-  var traceName = $('#trace-name');
-  var traceRefs = $('#trace-refs');
-  var traceMode = $('#trace-mode');
-  var live      = $('#live-region');
+  // --------------------------------------------- fields and business rules --
+  // REQ-003 defines what is captured. BR-01 to BR-03 define what is valid.
+  // Each message names the field and says why it was refused (REQ-004).
 
-  var form      = $('#details-form');
-  var inputs    = {
-    name:    $('#f-name'),
-    email:   $('#f-email'),
-    dob:     $('#f-dob'),
-    account: $('#f-account')
-  };
-  var consent   = $('#f-consent');
-  var consentBlock = $('#consent-block');
-  var toast     = $('#toast');
+  var ORDER = ['name', 'email', 'date', 'category'];
 
-  /* --------------------------------------------------- business rules ---- */
-
-  /* BR-02: structural check only. Deliberately permissive about the local
-     part — the rule is "structurally valid", not "deliverable". */
-  var EMAIL_RE = /^[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/;
-  var DOB_RE = /^(\d{2})\s*\/\s*(\d{2})\s*\/\s*(\d{4})$/;
-
-  var validators = {
-    /* BR-01 — mandatory, at least two characters. */
-    name: function (value) {
-      var v = value.trim();
-      if (!v) { return 'Enter your full name.'; }
-      if (v.length < 2) { return 'Your full name must be at least 2 characters.'; }
-      return null;
-    },
-
-    /* BR-02 — mandatory, structurally valid address. */
-    email: function (value) {
-      var v = value.trim();
-      if (!v) { return 'Enter your email address.'; }
-      if (!EMAIL_RE.test(v)) { return 'Enter an email address like name@example.com.'; }
-      return null;
-    },
-
-    /* BR-03 — mandatory, entered as DD / MM / YYYY. */
-    dob: function (value) {
-      var v = value.trim();
-      if (!v) { return 'Enter your date of birth.'; }
-
-      var parts = DOB_RE.exec(v);
-      if (!parts) { return 'Enter your date of birth as DD / MM / YYYY.'; }
-
-      var day = parseInt(parts[1], 10);
-      var month = parseInt(parts[2], 10);
-      var year = parseInt(parts[3], 10);
-
-      if (month < 1 || month > 12) { return 'The month must be between 01 and 12.'; }
-      if (day < 1) { return 'The day must be between 01 and 31.'; }
-
-      var probe = new Date(year, month - 1, day);
-      if (probe.getFullYear() !== year || probe.getMonth() !== month - 1 || probe.getDate() !== day) {
-        return 'That date does not exist. Check the day and month.';
+  var FIELDS = {
+    name: {
+      input: document.getElementById('f-name'),
+      err: document.getElementById('e-name'),
+      summary: document.getElementById('sum-name'),
+      // BR-01 - mandatory, at least two characters
+      validate: function (value) {
+        var v = value.trim();
+        if (!v) { return 'Enter the reporter name. This field is required.'; }
+        if (v.length < 2) { return 'Reporter name must be at least 2 characters.'; }
+        return '';
       }
-      if (probe.getTime() > Date.now()) { return 'Your date of birth cannot be in the future.'; }
-      if (year < 1900) { return 'Check the year — it should be 1900 or later.'; }
-      return null;
+    },
+
+    email: {
+      input: document.getElementById('f-email'),
+      err: document.getElementById('e-email'),
+      summary: document.getElementById('sum-email'),
+      // BR-02 - mandatory, structurally valid address
+      validate: function (value) {
+        var v = value.trim();
+        if (!v) { return 'Enter a contact email address. This field is required.'; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) {
+          return 'Enter a valid email address, for example jordan.kelly@terravale.com.au';
+        }
+        return '';
+      }
+    },
+
+    date: {
+      input: document.getElementById('f-date'),
+      err: document.getElementById('e-date'),
+      summary: document.getElementById('sum-date'),
+      // BR-03 - mandatory, entered as DD / MM / YYYY
+      validate: function (value) {
+        var v = value.trim();
+        if (!v) { return 'Enter the date you observed the hazard. This field is required.'; }
+
+        var parts = /^(\d{2})\s*\/\s*(\d{2})\s*\/\s*(\d{4})$/.exec(v);
+        if (!parts) { return 'Enter the date observed as DD / MM / YYYY.'; }
+
+        var day = Number(parts[1]);
+        var month = Number(parts[2]);
+        var year = Number(parts[3]);
+
+        if (month < 1 || month > 12) {
+          return 'That date does not exist. The month must be between 01 and 12.';
+        }
+        var daysInMonth = new Date(year, month, 0).getDate();
+        if (day < 1 || day > daysInMonth) {
+          return 'That date does not exist. That month has ' + daysInMonth + ' days.';
+        }
+        return '';
+      }
+    },
+
+    category: {
+      input: document.getElementById('f-category'),
+      err: document.getElementById('e-category'),
+      summary: document.getElementById('sum-category'),
+      // REQ-003 - one of the five listed categories
+      validate: function (value) {
+        if (!value) { return 'Select the hazard category that best fits what you saw.'; }
+        return '';
+      }
     }
   };
 
-  var FIELD_ORDER = ['name', 'email', 'dob'];
+  function wrapOf(key) { return FIELDS[key].input.closest('.field'); }
 
-  /* ------------------------------------------------------- field errors -- */
-
-  function errorEl(field) { return document.getElementById('e-' + field); }
-  function fieldEl(field) { return document.querySelector('.field[data-field="' + field + '"]'); }
-
-  function setFieldError(field, message) {
-    var wrap = fieldEl(field);
-    var err = errorEl(field);
-    if (!wrap || !err) { return; }
-
-    if (message) {
-      err.textContent = message;
-      err.hidden = false;
-      wrap.classList.add('is-invalid');
-      inputs[field].setAttribute('aria-invalid', 'true');
-    } else {
-      err.textContent = '';
-      err.hidden = true;
-      wrap.classList.remove('is-invalid');
-      inputs[field].removeAttribute('aria-invalid');
-    }
+  function setFieldError(key, message) {
+    var field = FIELDS[key];
+    var wrap = wrapOf(key);
+    if (wrap) { wrap.classList.toggle('is-invalid', Boolean(message)); }
+    field.err.textContent = message || '';
+    field.input.setAttribute('aria-invalid', message ? 'true' : 'false');
   }
 
-  function setConsentError(message) {
-    var err = $('#e-consent');
-    if (message) {
-      err.textContent = message;
-      err.hidden = false;
-      consentBlock.classList.add('is-invalid');
-      consent.setAttribute('aria-invalid', 'true');
-    } else {
-      err.textContent = '';
-      err.hidden = true;
-      consentBlock.classList.remove('is-invalid');
-      consent.removeAttribute('aria-invalid');
+  function checkField(key) {
+    var message = FIELDS[key].validate(FIELDS[key].input.value);
+    setFieldError(key, message);
+    return message;
+  }
+
+  // The summary and the standing "every field is required" line occupy the same
+  // slot, so the four error messages never push the form out of the frame.
+  function setAlert(count) {
+    if (!count) {
+      alertBox.hidden = true;
+      detailsMeta.hidden = false;
+      return;
     }
+    alertText.textContent = count === 1
+      ? '1 field needs your attention.'
+      : count + ' fields need your attention.';
+    alertBox.hidden = false;
+    detailsMeta.hidden = true;
   }
 
   function clearAllErrors() {
-    FIELD_ORDER.forEach(function (f) { setFieldError(f, null); });
-    setConsentError(null);
+    ORDER.forEach(function (key) { setFieldError(key, ''); });
+    setAlert(0);
   }
 
-  /* REQ-004 — refuse to progress, and say which field is at fault and why. */
-  function validateDetails() {
-    var failures = [];
-    FIELD_ORDER.forEach(function (field) {
-      var message = validators[field](state[field]);
-      setFieldError(field, message);
-      if (message) { failures.push(field); }
-    });
-    return failures;
-  }
-
-  function shake(el) {
-    if (!el) { return; }
-    el.classList.remove('is-shake');
-    void el.offsetWidth;              /* force reflow so the animation replays */
-    el.classList.add('is-shake');
-  }
-
-  /* -------------------------------------------------------- form wiring -- */
-
-  function readInputs() {
-    state.name = inputs.name.value;
-    state.email = inputs.email.value;
-    state.dob = inputs.dob.value;
-    state.account = inputs.account.value;
-  }
-
-  /* REQ-008 — coming back to this step must not lose anything. */
-  function restoreInputs() {
-    inputs.name.value = state.name;
-    inputs.email.value = state.email;
-    inputs.dob.value = state.dob;
-    inputs.account.value = state.account;
-    consent.checked = state.consent;
-  }
-
-  /* BR-03 — nudge the typed value into DD / MM / YYYY as it is entered. */
-  function maskDob() {
-    var el = inputs.dob;
-    var atEnd = el.selectionStart === null || el.selectionStart === el.value.length;
-    var digits = el.value.replace(/\D/g, '').slice(0, 8);
-    var out = digits.slice(0, 2);
-    if (digits.length > 2) { out += ' / ' + digits.slice(2, 4); }
-    if (digits.length > 4) { out += ' / ' + digits.slice(4, 8); }
-
-    if (atEnd && out !== el.value) {
-      el.value = out;
-      try { el.setSelectionRange(out.length, out.length); } catch (e) { /* not selectable */ }
-    }
-  }
-
-  FIELD_ORDER.concat(['account']).forEach(function (field) {
-    var el = inputs[field];
-    var handler = function () {
-      if (field === 'dob') { maskDob(); }
-      readInputs();
-      if (showErrors && validators[field]) {
-        setFieldError(field, validators[field](state[field]));
-      }
-    };
-    el.addEventListener('input', handler);
-    el.addEventListener('change', handler);
-  });
-
-  form.addEventListener('submit', function (event) {
-    event.preventDefault();          /* BR-05 — nothing is ever posted anywhere */
-    readInputs();
-    showErrors = true;
-
-    var failures = validateDetails();
-    if (failures.length) {
-      var first = failures[0];
-      shake(fieldEl(first));
-      inputs[first].focus();
-      announce(failures.length === 1
-        ? 'One field needs your attention.'
-        : failures.length + ' fields need your attention.');
-      return;
-    }
-    goTo(3);
-  });
-
-  consent.addEventListener('change', function () {
-    state.consent = consent.checked;
-    if (consent.checked) { setConsentError(null); }
-  });
-
-  /* ------------------------------------------------------------- review -- */
-
-  /* REQ-005 — play back exactly what the customer typed, never sample data. */
-  function renderReview() {
-    $('#r-name').textContent = state.name.trim();
-    $('#r-email').textContent = state.email.trim();
-    $('#r-dob').textContent = state.dob.trim();
-    $('#r-account').textContent = state.account;
-  }
-
-  /* ------------------------------------------------------- confirmation -- */
-
-  function makeAccountNumber() {
-    var digits = '';
-    for (var i = 0; i < 8; i += 1) {
-      digits += Math.floor(Math.random() * 10);
-    }
-    return {
-      bsb: '032\u2011114',
-      number: digits.slice(0, 4) + ' ' + digits.slice(4)
-    };
-  }
-
-  /* REQ-007 — new BSB and account number on the confirmation screen. */
-  function renderConfirmation() {
-    var generated = makeAccountNumber();
-    state.bsb = generated.bsb;
-    state.number = generated.number;
-
-    $('#r-account-number').textContent = state.bsb + ' \u00b7 ' + state.number;
-
-    var firstName = state.name.trim().split(/\s+/)[0];
-    $('#done-lede').textContent =
-      'Your ' + state.account + ' is open, ' + firstName +
-      '. Your digital card is ready to add to your wallet.';
-  }
-
-  $('#confirm-btn').addEventListener('click', function () {
-    /* BR-04 — the disclosure acceptance gates submission. */
-    if (!consent.checked) {
-      state.consent = false;
-      setConsentError('You need to accept the Product Disclosure Statement and Target Market Determination before we can open your account.');
-      shake(consentBlock);
-      consent.focus();
-      announce('You need to accept the Product Disclosure Statement and Target Market Determination.');
-      return;
-    }
-    state.consent = true;
-    setConsentError(null);
-    renderConfirmation();
-    goTo(4);
-  });
-
-  var toastTimer = null;
-  function showToast(message) {
-    toast.textContent = message;
-    toast.hidden = false;
-    window.clearTimeout(toastTimer);
-    toastTimer = window.setTimeout(function () { toast.hidden = true; }, 3200);
-  }
-
-  $('#wallet-btn').addEventListener('click', function () {
-    showToast('Digital card added to your Aurora wallet.');
-  });
-
-  $('#home-btn').addEventListener('click', function () {
-    resetJourney();
-  });
-
-  function resetJourney() {
-    state = blankState();
-    showErrors = false;
-    clearAllErrors();
-    restoreInputs();
-    toast.hidden = true;
-    goTo(1);
-  }
-
-  /* --------------------------------------------------------- navigation -- */
-
-  $$('[data-go]').forEach(function (el) {
-    el.addEventListener('click', function () { goTo(parseInt(el.dataset.go, 10)); });
-  });
-
-  /* REQ-008 — back, with everything still filled in. */
-  $$('[data-back]').forEach(function (el) {
-    el.addEventListener('click', function () { goTo(parseInt(el.dataset.back, 10)); });
-  });
-
-  function goTo(step) {
-    if (step === 2) { restoreInputs(); }
-    if (step === 3) { renderReview(); }
-
-    current = step;
-    screens.forEach(function (section) {
-      var isTarget = parseInt(section.dataset.screen, 10) === step;
-      section.hidden = !isTarget;
-      section.classList.toggle('is-active', isTarget);
-    });
-
-    var active = activeScreen();
-    updateTrace(active);
-    applyFit();
-    announce('Screen ' + step + ' of ' + TOTAL_STEPS + ', ' + active.dataset.name + '.');
-
-    /* Focus the heading, not the first input: it announces the step to screen
-       readers and keeps the mobile keyboard down until the customer taps. */
-    window.setTimeout(function () {
-      var target = active.querySelector('[data-focus]');
-      if (target && typeof target.focus === 'function') {
-        try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); }
-      }
-    }, 30);
-  }
-
-  function activeScreen() {
-    return screens.filter(function (s) { return !s.hidden; })[0] || screens[0];
-  }
-
-  /* ------------------------------------------- traceability to the BRD --- */
+  // ------------------------------------------------- screens and the trace --
 
   function updateTrace(section) {
     var refs = (section.getAttribute('data-req') || '')
       .split(',')
-      .map(function (r) { return r.trim(); })
+      .map(function (ref) { return ref.trim(); })
       .filter(Boolean);
 
-    traceStep.textContent = 'Screen ' + section.dataset.screen + ' of ' + TOTAL_STEPS;
-    traceName.textContent = section.dataset.name;
+    traceScreen.textContent = 'Screen ' + section.getAttribute('data-screen') +
+                              ' of ' + screens.length;
 
-    traceRefs.textContent = '';
+    while (traceChips.firstChild) { traceChips.removeChild(traceChips.firstChild); }
     refs.forEach(function (ref) {
       var chip = document.createElement('span');
-      chip.className = 'ref' + (ref.indexOf('BR-') === 0 ? ' is-rule' : '');
+      chip.className = 'trace-chip ' + (ref.indexOf('REQ') === 0 ? 'is-req' : 'is-br');
       chip.textContent = ref;
-      traceRefs.appendChild(chip);
+      traceChips.appendChild(chip);
     });
   }
 
-  traceMode.addEventListener('change', function () {
-    document.body.classList.toggle('trace-on', traceMode.checked);
-    applyFit();
-  });
+  function show(name) {
+    var next = document.getElementById('screen-' + name);
+    if (!next) { return; }
 
-  function announce(message) {
-    live.textContent = message;
+    screens.forEach(function (section) {
+      section.classList.toggle('is-active', section === next);
+    });
+    current = next;
+    updateTrace(next);
+
+    var scroller = next.querySelector('#hazard-form, .review-scroll');
+    if (scroller) { scroller.scrollTop = 0; }
+
+    if (started) {
+      var heading = next.querySelector('[tabindex="-1"]');
+      if (heading) { heading.focus({ preventScroll: true }); }
+    }
+    started = true;
   }
 
-  /* ------------------------------------------------------------ fitting -- */
-
-  /* Keep the design system's own frame size whole on any window, without a
-     scrollbar. Dimensions come from --frame-w / --frame-h in screens.css. */
-  function applyFit() {
-    var root = window.getComputedStyle(document.documentElement);
-    var frameW = parseFloat(root.getPropertyValue('--frame-w')) || 390;
-    var frameH = parseFloat(root.getPropertyValue('--frame-h')) || 844;
-
-    var styles = window.getComputedStyle(stage);
-    var padding = parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
-    var gap = (parseFloat(styles.rowGap) || 20) * 2;
-    var chrome = stageHead.offsetHeight + traceEl.offsetHeight + padding + gap + 6;
-
-    var byHeight = (window.innerHeight - chrome) / frameH;
-    var byWidth = (window.innerWidth - 56) / frameW;
-    var fit = Math.min(1, byHeight, byWidth);
-    if (!isFinite(fit) || fit < 0.42) { fit = 0.42; }
-
-    document.documentElement.style.setProperty('--fit', (Math.floor(fit * 1000) / 1000).toString());
+  function scrollFieldIntoView(key) {
+    var wrap = wrapOf(key);
+    if (!wrap) { return; }
+    try { wrap.scrollIntoView({ block: 'nearest' }); } catch (e) { wrap.scrollIntoView(); }
   }
 
-  var fitTimer = null;
-  window.addEventListener('resize', function () {
-    window.clearTimeout(fitTimer);
-    fitTimer = window.setTimeout(applyFit, 80);
+  // ------------------------------------------------------------ date entry --
+  // BR-03 asks for DD / MM / YYYY, so the field formats itself as it is typed.
+
+  function maskDate(raw) {
+    var digits = String(raw).replace(/\D/g, '').slice(0, 8);
+    if (digits.length <= 2) { return digits; }
+    if (digits.length <= 4) { return digits.slice(0, 2) + ' / ' + digits.slice(2); }
+    return digits.slice(0, 2) + ' / ' + digits.slice(2, 4) + ' / ' + digits.slice(4);
+  }
+
+  function todayAsDdMmYyyy() {
+    var now = new Date();
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    return pad(now.getDate()) + ' / ' + pad(now.getMonth() + 1) + ' / ' + now.getFullYear();
+  }
+
+  FIELDS.date.input.addEventListener('input', function () {
+    var input = FIELDS.date.input;
+    var atEnd = input.selectionStart === null || input.selectionStart === input.value.length;
+    if (!atEnd) { return; }
+
+    var masked = maskDate(input.value);
+    if (masked !== input.value) {
+      input.value = masked;
+      try { input.setSelectionRange(masked.length, masked.length); } catch (e) { /* no-op */ }
+    }
   });
 
-  /* ------------------------------------------------- presenter shortcut -- */
+  document.getElementById('btn-today').addEventListener('click', function () {
+    FIELDS.date.input.value = todayAsDdMmYyyy();
+    checkField('date');
+    FIELDS.date.input.focus();
+  });
 
-  /* Press "d" on the details screen to fill it in — for live demos only. */
+  // ------------------------------------------------------- live validation --
+
+  ORDER.forEach(function (key) {
+    var field = FIELDS[key];
+
+    // clear a visible error the moment the reporter fixes it
+    field.input.addEventListener('input', function () {
+      if (wrapOf(key).classList.contains('is-invalid')) { checkField(key); }
+    });
+    field.input.addEventListener('change', function () {
+      if (wrapOf(key).classList.contains('is-invalid')) { checkField(key); }
+    });
+    // and check on leaving a field the reporter has actually used
+    field.input.addEventListener('blur', function () {
+      if (field.input.value.trim() !== '') { checkField(key); }
+    });
+  });
+
+  // ------------------------------------------------- REQ-004: refuse to go --
+
+  function continueToReview() {
+    var failed = [];
+    ORDER.forEach(function (key) {
+      if (checkField(key)) { failed.push(key); }
+    });
+
+    if (failed.length) {
+      setAlert(failed.length);
+      scrollFieldIntoView(failed[0]);
+      FIELDS[failed[0]].input.focus();
+      return;
+    }
+
+    setAlert(0);
+    fillReview();
+    show('review');
+  }
+
+  // ----------------------------------- REQ-005: show what was actually typed --
+
+  function fillReview() {
+    FIELDS.name.summary.textContent = FIELDS.name.input.value.trim();
+    FIELDS.email.summary.textContent = FIELDS.email.input.value.trim();
+    FIELDS.date.summary.textContent = FIELDS.date.input.value.trim();
+    FIELDS.category.summary.textContent = FIELDS.category.input.value;
+  }
+
+  // ------------------------------------- REQ-006 / BR-04: the declaration ----
+
+  function setSubmitState() {
+    var confirmed = declare.checked;
+    // BR-04 blocks submission, but the control stays operable and focusable so
+    // it can say why. aria-disabled would hide that explanation from anyone
+    // using a screen reader, so the state is carried on data-blocked instead.
+    submitBtn.classList.toggle('is-blocked', !confirmed);
+    submitBtn.setAttribute('data-blocked', confirmed ? 'false' : 'true');
+    if (confirmed) {
+      consentBlock.classList.remove('is-invalid');
+      declareErr.textContent = '';
+      declareErr.classList.remove('is-shown');
+    }
+  }
+
+  declare.addEventListener('change', setSubmitState);
+
+  function refuseSubmission() {
+    declareErr.textContent = 'Confirm the declaration above before you submit this report.';
+    declareErr.classList.add('is-shown');
+    consentBlock.classList.remove('is-invalid');
+    void consentBlock.offsetWidth;           // restart the nudge
+    consentBlock.classList.add('is-invalid');
+    try { consentBlock.scrollIntoView({ block: 'nearest' }); } catch (e) { /* no-op */ }
+    declare.focus();
+  }
+
+  // ---------------------------------------------- REQ-007: the confirmation --
+
+  function newHazardReference() {
+    var serial = String(Math.floor(Math.random() * 90000) + 10000);
+    return 'HZ-' + new Date().getFullYear() + '-' + serial;
+  }
+
+  function resetNotify() {
+    notifyBtn.disabled = false;
+    notifyBtn.classList.remove('is-blocked');
+    notifyBtn.textContent = 'Notify shift supervisor';
+    notifyStatus.textContent = '';
+  }
+
+  submitBtn.addEventListener('click', function () {
+    if (!declare.checked) { refuseSubmission(); return; }   // BR-04
+
+    refOut.textContent = newHazardReference();
+    resetNotify();
+    show('done');
+  });
+
+  notifyBtn.addEventListener('click', function () {
+    if (notifyBtn.disabled) { return; }
+    notifyBtn.disabled = true;
+    notifyBtn.classList.add('is-blocked');
+    notifyBtn.textContent = 'Shift supervisor notified';
+    notifyStatus.textContent =
+      '\u2713 Sent to the Pit 4 shift supervisor. Simulated for this prototype - nothing leaves this device.';
+  });
+
+  // ------------------------------------------------------------- wiring up --
+
+  document.getElementById('btn-start').addEventListener('click', function () {
+    show('details');                                        // REQ-002
+  });
+
+  // REQ-008: back to a previous step. Nothing is reset, so nothing is lost.
+  Array.prototype.forEach.call(document.querySelectorAll('[data-goto]'), function (button) {
+    button.addEventListener('click', function () {
+      show(button.getAttribute('data-goto'));
+    });
+  });
+
+  document.getElementById('btn-continue').addEventListener('click', continueToReview);
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();                                 // BR-05: never posts
+    continueToReview();
+  });
+
+  document.getElementById('btn-restart').addEventListener('click', function () {
+    form.reset();
+    clearAllErrors();
+    declare.checked = false;
+    setSubmitState();
+    resetNotify();
+    show('intro');
+  });
+
+  // ------------------------------------------ the requirement-label toggle --
+
+  toggleRefs.addEventListener('change', function () {
+    body.classList.toggle('show-refs', toggleRefs.checked);
+  });
+
+  // ------------------------------------------------------ presenter helper --
+  // "d" fills the form so a walkthrough does not depend on typing with gloves
+  // on. Ignored while a form control has focus, so it never eats a keystroke.
+
   document.addEventListener('keydown', function (event) {
     if (event.key !== 'd' && event.key !== 'D') { return; }
-    if (event.metaKey || event.ctrlKey || event.altKey) { return; }
-    if (current !== 2) { return; }
+    if (event.ctrlKey || event.metaKey || event.altKey) { return; }
 
-    var tag = (event.target.tagName || '').toLowerCase();
-    if (tag === 'input' || tag === 'select' || tag === 'textarea') { return; }
+    var target = event.target;
+    if (target && (target.isContentEditable ||
+        /^(INPUT|SELECT|TEXTAREA)$/.test(target.tagName || ''))) { return; }
 
-    event.preventDefault();
-    inputs.name.value = 'Jordan Blake';
-    inputs.email.value = 'jordan@example.com';
-    inputs.dob.value = '14 / 03 / 1991';
-    readInputs();
+    if (current.id === 'screen-intro') { show('details'); }
+    if (current.id !== 'screen-details') { return; }
+
+    FIELDS.name.input.value = 'Jordan Kelly';
+    FIELDS.email.input.value = 'jordan.kelly@terravale.com.au';
+    FIELDS.date.input.value = todayAsDdMmYyyy();
+    FIELDS.category.input.value = 'Vehicle and mobile plant';
     clearAllErrors();
-    announce('Demo details filled in.');
   });
 
-  /* --------------------------------------------------------------- boot -- */
+  // --------------------------------------------------------------- startup --
 
-  applyFit();
-  updateTrace(activeScreen());
-})();
+  setSubmitState();
+  updateTrace(current);
+}());

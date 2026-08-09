@@ -1,389 +1,447 @@
-PROMPT: The business requirements document has been revised. Compare brd/aurora-everyday-account-brd.html (v1.0) with brd/aurora-everyday-account-brd-v1.1.html (v1.1) and identify what changed. Copy the prototype folder to a new folder called prototype-v2, then update prototype-v2 so it satisfies the revised document, including the newly added requirement and business rule. Keep everything else exactly as it is: same visual style, reuse assets/screens.css unmodified, no framework, library, build step or CDN, and it must still run straight from the filesystem. Keep the data-req traceability attributes accurate and up to date for any screen you change, and update the version reference shown in the page header to match the revised document. Do not modify the original prototype folder or either BRD. Verify your work in a real browser before you finish.
+PROMPT: The business requirements document has been revised. Compare brd/terravale-field-hazard-report-brd.html (v1.0) with brd/terravale-field-hazard-report-brd-v1.1.html (v1.1) and identify what changed. Copy the prototype folder to a new folder called prototype-v2, then update prototype-v2 so it satisfies the revised document, including the newly added requirement and business rule. Keep everything else exactly as it is: same visual style, reuse assets/screens.css unmodified, no framework, library, build step or CDN, and it must still run straight from the filesystem. This is a mining site safety tool used in gloves and direct sunlight, so keep tap targets large and contrast high. Keep the data-req traceability attributes and the trace strip accurate and up to date for any screen you change, and update the BRD version reference shown on the page to match the revised document. Do not modify the original prototype folder or either BRD. Verify your work in a real browser before you finish, and remove any scratch folders you create.
 ● gel-guidance canvas ready — open it to explore the Division 1 audit.
 
-● gel-guidance canvas ready — open it to explore the Division 1 audit.
-
-I'll start by exploring the repo structure and reading both BRD versions.
+I'll start by exploring the repo structure and reading both BRDs.
 
 ● List all files in repo (shell)
-  │ Get-ChildItem -Recurse -File | Select-Object FullName, Length | Format-Table -AutoSize |
-  │ Out-String -Width 200
-  └ 26 lines…
+  │ Get-ChildItem -Recurse -File | Select-Object -ExpandProperty FullName
+  └ 14 lines…
 
-● Read aurora-everyday-account-brd.html
-  │ brd\aurora-everyday-account-brd.html
-  └ 286 lines read
+● List directories and git status (shell)
+  │ Get-ChildItem -Path . -Directory | Select-Object Name; git --no-pager status --short
+  └ 24 lines…
 
-● Read aurora-everyday-account-brd-v1.1.html
-  │ brd\aurora-everyday-account-brd-v1.1.html
-  └ 317 lines read
+● File sizes (shell)
+  │ Get-ChildItem -Recurse -File | Select-Object FullName,
+  │ @{n='KB';e={[math]::Round($_.Length/1KB,1)}}
+  └ 16 lines…
 
-Diff is clear: v1.1 adds REQ-009 (Joint Everyday Account) and BR-06 (second applicant validation). Now reading the prototype.
+● Diff stat between BRD versions (shell)
+  │ git --no-pager diff --no-index --stat brd\terravale-field-hazard-report-brd.html
+  │ brd\terravale-field-hazard-report-brd-v1.1.html
+  └ 4 lines…
+
+● Full diff between BRD versions (shell)
+  │ git --no-pager diff --no-index -U3 brd\terravale-field-hazard-report-brd.html
+  │ brd\terravale-field-hazard-report-brd-v1.1.html
+  └ 99 lines…
+
+Clear diff: v1.1 adds **REQ-009** (risk rating + conditional supervisor details) and **BR-06** (validation of those). Now reading the full BRD and the prototype.
+
+● Read terravale-field-hazard-report-brd-v1.1.html
+  │ brd\terravale-field-hazard-report-brd-v1.1.html
+  └ L180:330 (143 lines read)
+
+● Line counts of key files (shell)
+  │ (Get-Content brd\terravale-field-hazard-report-brd-v1.1.html | Measure-Object -Line).Lines;
+  │ (Get-Content prototype\index.html | Measure-Object -Line).Lines; (Get-Content prototype\app.js |
+  │ Measure-Object -Line).Lines; (Get-Content prototype\prototype.css | Measure-Object -Line).Lines;
+  │ (Get-Content assets\screens.css | Measure-Object -Line).Lines
+  └ 6 lines…
+
+Now reading the prototype files in full.
 
 ● Read app.js
   │ prototype\app.js
-  └ 456 lines read
+  └ 395 lines read
 
 ● Read index.html
   │ prototype\index.html
-  └ 251 lines read
+  └ 272 lines read
 
-Now reading the stylesheets so I reuse existing classes rather than inventing new visuals.
-
-● Read prototype.css                                                                              5s
+● Read prototype.css
   │ prototype\prototype.css
-  └ 291 lines read
+  └ 405 lines read
 
-● Read screens.css                                                                                5s
+Now the shared design system — I need to know exactly what components exist so I can reuse them unmodified.
+
+● Read screens.css
   │ assets\screens.css
-  └ 475 lines read
+  └ L1:230 (230 lines read)
 
-Now I'll copy the prototype and set up a plan.
+● Read screens.css
+  │ assets\screens.css
+  └ L230:442 (212 lines read)
+
+● Read screens.css
+  │ assets\screens.css
+  └ L441:442 (1 line read)
+
+● Tail of screens.css (buttons) (shell)
+  │ Get-Content assets\screens.css -Tail 45
+  └ 46 lines…
 
 ● Todo added 7 items
   │ Copying prototype to prototype-v2
-  │ Adding joint account option and second applicant fields
-  │ Adding second applicant rows to review
-  │ Updating version reference to v1.1
-  │ Implementing REQ-009 / BR-06 logic in app.js
-  │ Verifying screen 2 fits 390x844 with joint fields visible
-  └ Verifying end-to-end in a real browser
-
-● Copy prototype to prototype-v2 (shell)
-  │ Copy-Item -Path "prototype" -Destination "prototype-v2" -Recurse -Force; Get-ChildItem
-  │ prototype-v2 | Select-Object Name, Length
-  └ 6 lines…
-
-Now updating `prototype-v2/index.html` — version header, joint account option, second-applicant fields, review rows, and traceability attributes.
-
-● Edit index.html +1 -1
-  └ prototype-v2\index.html
-
-● Edit index.html +22 -1
-  └ prototype-v2\index.html
-
-● Edit index.html +1 -1
-  └ prototype-v2\index.html
-
-● Edit index.html +3
-  └ prototype-v2\index.html
-
-● Edit index.html +1 -1
-  └ prototype-v2\index.html
-
-● Edit index.html +1 -1
-  └ prototype-v2\index.html
-
-Now the CSS additions and the app.js logic.
-
-● Edit prototype.css +30
-  └ prototype-v2\prototype.css
-
-● Edit app.js +5 -1
-  └ prototype-v2\app.js
-
-● Edit app.js +5
-  └ prototype-v2\app.js
-
-● Edit app.js +4 -1
-  └ prototype-v2\app.js
-
-● Edit app.js +28 -1
-  └ prototype-v2\app.js
-
-● Edit app.js +14 -2
-  └ prototype-v2\app.js
-
-● Edit app.js +5
-  └ prototype-v2\app.js
-
-● Edit app.js +9 -1
-  └ prototype-v2\app.js
-
-● Edit app.js +2 -1
-  └ prototype-v2\app.js
-
-● Edit app.js +4
-  └ prototype-v2\app.js
-
-● Edit app.js +4
-  └ prototype-v2\app.js
-
-Now let me verify in a real browser. Checking tooling first.
-
-● Check Playwright availability and existing screenshot script (shell)
-  │ python -c "import playwright, sys; print('playwright ok', sys.version)" 2>&1; Get-Content
-  │ .shots\v11.py -ErrorAction SilentlyContinue
-  └ 11 lines…
-
-● Create verify.py +188
-  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\verify.py
-
-● Run browser verification of prototype-v2 (shell)                                               15s
-  │ python "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\
-  │ verify.py" 2>&1
-  └ 77 lines…
-
-Screen 2 overflows by 68px once the joint pair appears. Fixing with a scoped scroll on the field stack (only while the joint group is shown), so every component keeps its handed-over size.
-
-● Edit prototype.css +13
-  └ prototype-v2\prototype.css
-
-● Edit app.js +1
-  └ prototype-v2\app.js
-
-● Edit app.js +7 -1
-  └ prototype-v2\app.js
-
-● Edit app.js +4
-  └ prototype-v2\app.js
-
-● Edit app.js +1
-  └ prototype-v2\app.js
-
-● Edit verify.py +14 -3
-  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\verify.py
-
-● Edit verify.py +10 -4
-  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\verify.py
-
-● Re-run browser verification (shell)                                                            15s
-  │ python "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\
-  │ verify.py" 2>&1
-  └ 80 lines…
-
-All checks pass. Let me visually inspect the screenshots.
-
-● Read v2-screen2-joint.png
-  │ .shots\v2-screen2-joint.png
-  └ 1 line read
-
-  [Image: Image file at path
-  C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.shots\v2-screen2-joint.png
-  [image/png] 1440x1000]
-
-● Read v2-screen3-joint.png
-  │ .shots\v2-screen3-joint.png
-  └ 1 line read
-
-  [Image: Image file at path
-  C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.shots\v2-screen3-joint.png
-  [image/png] 1440x1000]
-
-Let me look at the unscrolled joint state to judge how the scroll reads.
-
-● Create shots.py +19
-  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\shots.py
-
-● Capture joint screen top and bottom scroll states (shell)
-  │ python "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\
-  │ shots.py" 2>&1
-  └ 2 lines…
-
-● Read v2-joint-top.png
-  │ .shots\v2-joint-top.png
-  └ 1 line read
-
-  [Image: Image file at path
-  C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.shots\v2-joint-top.png
-  [image/png] 330x713]
-
-● Read v2-joint-bottom.png
-  │ .shots\v2-joint-bottom.png
-  └ 1 line read
-
-  [Image: Image file at path
-  C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.shots\v2-joint-bottom.png
-  [image/png] 330x713]
-
-The scroll works but lacks a "more below" cue. Adding an edge fade tied to scroll position.
-
-● Edit prototype.css +18 -3
-  └ prototype-v2\prototype.css
-
-● Edit app.js +12
-  └ prototype-v2\app.js
-
-● Read app.js
-  │ prototype-v2\app.js
-  └ L152:235 (84 lines read)
-
-● Edit app.js +1
-  └ prototype-v2\app.js
-
-● Edit app.js +1
-  └ prototype-v2\app.js
-
-● Recapture joint scroll states with fade (shell)
-  │ python "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\
-  │ shots.py" 2>&1
-  └ 2 lines…
-
-● Read v2-joint-top.png
-  │ .shots\v2-joint-top.png
-  └ 1 line read
-
-  [Image: Image file at path
-  C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.shots\v2-joint-top.png
-  [image/png] 330x713]
-
-● Read v2-joint-bottom.png
-  │ .shots\v2-joint-bottom.png
-  └ 1 line read
-
-  [Image: Image file at path
-  C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.shots\v2-joint-bottom.png
-  [image/png] 330x713]
-
-The fade is too subtle on its own. Better: selecting "Joint" should reveal the new fields directly.
-
-● Edit app.js -2
-  └ prototype-v2\app.js
-
-● Edit app.js +20 -1
-  └ prototype-v2\app.js
-
-● Edit app.js +4
-  └ prototype-v2\app.js
-
-● Edit shots.py +4 -1
-  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\shots.py
-
-● Capture reveal-on-select state (shell)                                                          5s
-  │ python "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\
-  │ shots.py" 2>&1
-  └ 2 lines…
-
-● Read v2-joint-top.png
-  │ .shots\v2-joint-top.png
-  └ 1 line read
-
-  [Image: Image file at path
-  C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.shots\v2-joint-top.png
-  [image/png] 330x713]
-
-● Read v2-joint-reveal.png
-  │ .shots\v2-joint-reveal.png
-  └ 1 line read
-
-  [Image: Image file at path
-  C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.shots\v2-joint-reveal.png
-  [image/png] 330x713]
-
-● Edit verify.py +7 -1
-  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\verify.py
-
-● Edit verify.py +13 -1
-  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\verify.py
-
-● Full re-verification in browser (shell)                                                        15s
-  │ python "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\
-  │ verify.py" 2>&1
-  └ 84 lines…
-
-The one failure is my test's assumption, not the code — in that case all fields are empty so `name` is the first failure (correctly scrolled to top). Fixing the assertions.
-
-● Edit verify.py +6
-  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\verify.py
-
-● Edit verify.py +2 -2
-  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\verify.py
-
-● Re-run verification with corrected assertions (shell)                                          14s
-  │ python "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\
-  │ verify.py" 2>&1 | Select-Object -Last 30
-  └ 31 lines…
-
-All checks pass. Now verifying originals are untouched and checking cross-browser + docs.
+  │ Adding the risk rating screen
+  │ Updating the review screen
+  │ Wiring validation and conditional logic in app.js
+  │ Adding prototype.css styles
+  │ Updating traceability and BRD version
+  └ Verifying in a real browser
 
 / Search (grep)
-  │ "prototype" (README.md, RUN-SHEET.md)
-  └ 35 lines found
+  │ "prototype-v2|v1\.1" (README.md, RUN-SHEET.md)
+  └ 14 lines found
 
-● Confirm originals untouched (shell)
-  │ git --no-pager status --porcelain; Write-Output "---- diff of tracked files ----"; git
-  │ --no-pager diff --stat
-  └ 18 lines…
+Confirmed: `prototype-v2/` is already the expected output path in the docs. Copying the folder now.
 
-Git shows `prototype/` as modified — I need to confirm that predates my work.
+✔ Todo completed copy-folder
 
-● Inspect prototype diff and file timestamps (shell)
-  │ git --no-pager diff --stat --ignore-all-space -- prototype/; Write-Output "---- first hunk
-  │ ----"; git --no-pager diff -- prototype/app.js | Select-Object -First 25; Write-Output "----
-  │ mtimes ----"; Get-ChildItem prototype, prototype-v2 -File | Select-Object FullName,
-  │ LastWriteTime
-  └ 41 lines…
-
-`prototype/` was already modified before my session started (mtimes 9:01–9:12 PM vs. session start 9:15 PM) — I didn't touch it. Now a cross-browser pass.
-
-● Create crossbrowser.py +67
-  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\crossbrowser.py
-
-● Run journey in Chromium, Firefox and WebKit (shell)                                             6s
-  │ python "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\
-  │ crossbrowser.py" 2>&1
-  └ 21 lines…
-
-Only bundled Chromium is installed. Let me verify against a genuinely installed system browser (Edge).
-
-● Run journey in installed Edge and Chrome (shell)                                                7s
-  │ $s = Get-Content "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84
-  │ b4cb8\files\crossbrowser.py" -Raw
-  │ $s = $s.Replace('    journey("firefox", pw.firefox)`n', '')
-  │ $s = $s -replace '(?m)^    journey\("firefox".*\r?\n', ''
-  │ $s = $s -replace '(?m)^    journey\("webkit".*\r?\n', ''…
-  └ 28 lines…
-
-Verified in the installed Microsoft Edge from `file://`. Final review of the complete change set:
-
-● Diff prototype vs prototype-v2 (shell)
-  │ git --no-pager diff --no-index -- prototype prototype-v2 2>&1 | Select-Object -First 400
-  └ 401 lines…
-
-● Read prototype.css
-  │ prototype-v2\prototype.css
-  └ L190:225 (35 lines read)
-
-● Read .gitignore
-  └ 10 lines read
-
-Cleaning up scratch artefacts and closing out.
-
-✔ Todo completed
-
-● Remove scratch screenshots and confirm assets/BRD untouched (shell)
-  │ Remove-Item ".shots\v2-*.png" -Force -ErrorAction SilentlyContinue; Get-ChildItem .shots |
-  │ Select-Object Name; Write-Output "---- assets untouched ----"; git --no-pager status --porcelain
-  │ -- assets/ brd/ prototype/index.html; Write-Output "(no output above for assets = unmodified)"
-  └ 14 lines…
-
-● Confirm BRD and assets timestamps predate session (shell)
-  │ Get-ChildItem brd, assets -File | Select-Object Name, LastWriteTime | Format-Table -AutoSize |
-  │ Out-String -Width 120
+● Copy prototype to prototype-v2 (shell)
+  │ Copy-Item -Path prototype -Destination prototype-v2 -Recurse -Force; Get-ChildItem prototype-v2
+  │ | Select-Object Name, Length
   └ 6 lines…
 
-Done. Both BRDs (9:14 PM and earlier), `assets/screens.css`, and `prototype/` all predate this session at 9:15 PM — untouched.
+Now updating `prototype-v2/index.html` — adding the risk rating step and renumbering the journey.
 
-**What changed between v1.0 → v1.1**
-- **REQ-009 (Must)** — account list must also offer a *Joint Everyday Account*; when chosen, capture the second applicant's name + email and show both on review; no second-applicant details for any other type.
-- **BR-06** — second applicant's name and email mandatory, validated to the same standard as BR-01/BR-02.
-- Scope line: "single **or joint** applicant"; version/date block and revision banner.
+● Edit index.html +3 -3
+  └ prototype-v2\index.html
+
+● Edit index.html +1 -1
+  └ prototype-v2\index.html
+
+● Edit index.html +103 -5
+  └ prototype-v2\index.html
+
+● Edit index.html +12
+  └ prototype-v2\index.html
+
+● Edit index.html +2 -2
+  └ prototype-v2\index.html
+
+● Edit index.html +1 -1
+  └ prototype-v2\index.html
+
+● Edit index.html +1 -1
+  └ prototype-v2\index.html
+
+Now the CSS — glove-sized option cards, escalation panel, and the review pill, all layered in `prototype.css` only.
+
+● Edit prototype.css +1 -1
+  └ prototype-v2\prototype.css
+
+● Edit prototype.css +2 -1
+  └ prototype-v2\prototype.css
+
+● Edit prototype.css +129 -1
+  └ prototype-v2\prototype.css
+
+● Edit prototype.css +46
+  └ prototype-v2\prototype.css
+
+● Edit prototype.css +1 -1
+  └ prototype-v2\prototype.css
+
+● Edit prototype.css +2 -1
+  └ prototype-v2\prototype.css
+
+Now the JavaScript — validation, conditional escalation, and review wiring.
+
+● Edit app.js +10 -3
+  └ prototype-v2\app.js
+
+● Edit app.js +1 -1
+  └ prototype-v2\app.js
+
+● Edit app.js +37 -18
+  └ prototype-v2\app.js
+
+● Edit app.js +21
+  └ prototype-v2\app.js
+
+Now the alert factory, risk-rating helpers, and the escalation reveal.
+
+● Edit app.js +80 -12
+  └ prototype-v2\app.js
+
+● Edit app.js +1 -1
+  └ prototype-v2\app.js
+
+● Edit app.js +3 -3
+  └ prototype-v2\app.js
+
+● Edit app.js +57 -3
+  └ prototype-v2\app.js
+
+Now the wiring, restart, presenter helper and startup.
+
+● Edit app.js +10 -1
+  └ prototype-v2\app.js
+
+● Edit app.js +21 -6
+  └ prototype-v2\app.js
+
+● Syntax-check app.js (shell)
+  │ node --check prototype-v2\app.js; if ($LASTEXITCODE -eq 0) { "app.js syntax OK" }
+  └ 2 lines…
+
+● Confirm originals untouched and see change size (shell)
+  │ git --no-pager diff --no-index --stat prototype prototype-v2; git --no-pager status --short
+  │ assets/screens.css prototype brd
+  └ 13 lines…
+
+Originals untouched (those `M` flags predate my session). Now verifying in a real browser with Playwright.
+
+● Check mtimes and playwright availability (shell)
+  │ (Get-Item assets\screens.css).LastWriteTime; (Get-ChildItem prototype | Select-Object Name,
+  │ LastWriteTime); python -c "import playwright, sys; print('playwright py', playwright.__file__)"
+  │ 2>&1 | Select-Object -First 3
+  └ 15 lines…
+
+Playwright is available. Writing a browser verification harness in the session workspace.
+
+● Create verify_v2.py +270
+  └ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\verify_v2.py
+
+● Run browser verification (shell)                                                               44s
+  │ cd C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files;
+  │ python verify_v2.py 2>&1 | Select-Object -Last 70
+  └ 70 lines…
+
+Harness bug only (ambiguous selector) — all real checks passed to that point. Fixing and re-running for the full log.
+
+● Edit verify_v2.py +1 -1
+  └ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\verify_v2.py
+
+● Re-run browser verification (shell)                                                            15s
+  │ cd C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files;
+  │ python verify_v2.py 2>&1
+  └ 63 lines…
+
+All 57 checks pass with a clean console. Let me look at the screenshots to confirm the visual result.
+
+● Read 06-risk-high.png
+  │ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\shots\06-risk-high.png
+  └ 1 line read
+
+  [Image: Image file at path C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20
+  d19dff20a5\files\shots\06-risk-high.png [image/png] 1185x2000]
+
+That matches the house style precisely. Checking the review screen and the ref overlay.
+
+● Read 08-review-high.png
+  │ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\shots\08-review-high.png
+  └ 1 line read
+
+  [Image: Image file at path C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20
+  d19dff20a5\files\shots\08-review-high.png [image/png] 1185x2000]
+
+The review screen now overflows its scroll area, clipping the declaration. Let me measure exactly how much.
+
+● Create measure.py +42
+  └ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\measure.py
+
+● Measure review scroll overflow (shell)                                                          5s
+  │ cd C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files;
+  │ python measure.py
+  └ 3 lines…
+
+Review fits for Low/Moderate but the escalated case overflows by 102px. I'll compact the escalation card and add a scroll affordance so the declaration never reads as broken.
+
+● Edit prototype.css +9 -1
+  └ prototype-v2\prototype.css
+
+● Edit index.html +2 -2
+  └ prototype-v2\index.html
+
+● Edit app.js +1
+  └ prototype-v2\app.js
+
+● Edit app.js +1
+  └ prototype-v2\app.js
+
+● Edit app.js +9
+  └ prototype-v2\app.js
+
+● Re-measure review overflow (shell)
+  │ cd C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files;
+  │ python measure.py
+  └ 3 lines…
+
+● Edit verify_v2.py +14
+  └ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\verify_v2.py
+
+● Edit verify_v2.py +3
+  └ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\verify_v2.py
+
+● Re-run verification with scroll-cue checks (shell)                                             15s
+  │ cd C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files;
+  │ python verify_v2.py 2>&1 | Select-Object -Last 25
+  └ 26 lines…
+
+● Read 08-review-high.png
+  │ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\shots\08-review-high.png
+  └ 1 line read
+
+  [Image: Image file at path C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20
+  d19dff20a5\files\shots\08-review-high.png [image/png] 1185x2000]
+
+Good — declaration and checkbox now visible with a clear fade cue. Checking the error state and the ref overlay.
+
+● Read 07-escalation-errors.png
+  │ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\shots\07-escalation-errors.p
+  │ ng
+  └ 1 line read
+
+  [Image: Image file at path C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20
+  d19dff20a5\files\shots\07-escalation-errors.png [image/png] 1185x2000]
+
+● Read 10-risk-refs.png
+  │ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\shots\10-risk-refs.png
+  └ 1 line read
+
+  [Image: Image file at path C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20
+  d19dff20a5\files\shots\10-risk-refs.png [image/png] 1185x2000]
+
+● Read 03-risk.png
+  │ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\shots\03-risk.png
+  └ 1 line read
+
+  [Image: Image file at path C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20
+  d19dff20a5\files\shots\03-risk.png [image/png] 1185x2000]
+
+The risk screen looks airy — let me compare against the v1.0 details screen to check whether that's the house pattern.
+
+● Screenshot v1.0 details screen for comparison (shell)
+  │ cd C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files; @'
+  │ import pathlib
+  │ from playwright.sync_api import sync_playwright
+  │ ROOT = pathlib.Path(r"C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough")
+  │ with sync_playwright() as p:…
+  └ 10 lines…
+
+● Read ref-v1-details.png
+  │ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\shots\ref-v1-details.png
+  └ 1 line read
+
+  [Image: Image file at path C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20
+  d19dff20a5\files\shots\ref-v1-details.png [image/png] 1185x2000]
+
+Confirmed — that generous whitespace is the house pattern. I'll close the gap by enlarging the tap targets (which also serves the gloves requirement), then measure the fit.
+
+● Edit prototype.css +3 -3
+  └ prototype-v2\prototype.css
+
+● Edit prototype.css +4 -4
+  └ prototype-v2\prototype.css
+
+● Create measure_risk.py +32
+  └ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\measure_risk.py
+
+● Measure risk screen fit (shell)
+  │ cd C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files;
+  │ python measure_risk.py
+  └ 3 lines…
+
+9px short. Trimming to fit while keeping targets generous.
+
+● Edit prototype.css +2 -2
+  └ prototype-v2\prototype.css
+
+● Edit prototype.css +1 -1
+  └ prototype-v2\prototype.css
+
+● Re-measure risk screen fit (shell)
+  │ cd C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files;
+  │ python measure_risk.py
+  └ 3 lines…
+
+Both risk states now fit the frame with no scroll. Checking the escalated view.
+
+● Read 13-risk-escalated.png
+  │ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\shots\13-risk-escalated.png
+  └ 1 line read
+
+  [Image: Image file at path C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20
+  d19dff20a5\files\shots\13-risk-escalated.png [image/png] 1185x2000]
+
+● Read 12-risk-resized.png
+  │ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\shots\12-risk-resized.png
+  └ 1 line read
+
+  [Image: Image file at path C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20
+  d19dff20a5\files\shots\12-risk-resized.png [image/png] 1185x2000]
+
+Adding fit assertions for both risk states, then running the full suite.
+
+● Edit verify_v2.py +2
+  └ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\verify_v2.py
+
+● Edit verify_v2.py +2
+  └ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\verify_v2.py
+
+● Run full verification suite (shell)                                                            28s
+  │ cd C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files;
+  │ python verify_v2.py 2>&1 | Select-String -Pattern "FAIL|All checks|console:|FAILURE" ; python
+  │ verify_v2.py 2>&1 | Select-Object -Last 3
+  └ 6 lines…
+
+All 61 checks pass. Let me confirm it also holds up in the machine's real Edge browser and in Firefox/WebKit.
+
+● Create verify_cross.py +91
+  └ ~\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files\verify_cross.py
+
+● Cross-browser verification (shell)                                                             10s
+  │ cd C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files;
+  │ python verify_cross.py 2>&1
+  └ 6 lines…
+
+Edge passes end to end. Let me do a final review of the complete diff.
+
+● Review app.js diff (shell)
+  │ git --no-pager diff --no-index -U2 prototype\app.js prototype-v2\app.js
+  └ 417 lines…
+
+● Review index.html diff (shell)
+  │ git --no-pager diff --no-index -U1 prototype\index.html prototype-v2\index.html
+  └ 178 lines…
+
+● Check repo file mtimes for stray artifacts (shell)
+  │ Get-ChildItem -Recurse -File -Force | Where-Object { $_.FullName -notmatch '\\\.git\\' } |
+  │ Sort-Object LastWriteTime | Select-Object LastWriteTime,
+  │ @{n='Path';e={$_.FullName.Replace($PWD.Path+'\','')}} | Format-Table -AutoSize
+  └ 20 lines…
+
+All repo changes are confined to `prototype-v2/`. Running the final verification pass.
+
+● Final verification run (shell)                                                                 13s
+  │ cd C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files;
+  │ python verify_v2.py 2>&1 | Select-Object -First 32
+  └ 33 lines…
+
+Now cleaning up the scratch harness.
+
+● Remove scratch files and confirm repo state (shell)
+  │ cd C:\Users\xaviermorris\.copilot\session-state\73350e2f-e36b-4485-b728-20d19dff20a5\files;
+  │ Remove-Item -Recurse -Force shots, verify_v2.py, verify_cross.py, measure.py, measure_risk.py
+  │ -ErrorAction SilentlyContinue; Get-ChildItem -Force | Select-Object Name; "---"; cd
+  │ C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough; git --no-pager status
+  │ --short
+  └ 21 lines…
+
+Done. Verified in real browsers (Chromium + the machine's Edge), running straight from `file://`.
+
+**What changed in the BRD (v1.0 → v1.1)**
+- **REQ-009** (Must): capture a risk rating — Low / Moderate / High potential; when High potential, capture the notified supervisor's name and email and show both on review; otherwise don't request them.
+- **BR-06**: those supervisor fields are mandatory and validated to the same standard as the reporter's own (BR-01, BR-02).
+- Scope line now reads "with supervisor escalation"; footer/version → v1.1.
 
 **What I built in `prototype-v2/`**
-- Header now reads `BRD-2026-014 v1.1`.
-- Screen 2: 4th select option; a conditional *Second applicant* group (name + email) that appears only for the joint type. Selecting it smoothly scrolls the new fields into view; the stack scrolls (with soft edge fades) **only** in the joint case, so every other screen keeps its exact handed-over layout and field sizes.
-- BR-06 validation mirrors BR-01/BR-02 with second-applicant wording, applied only when joint; switching away retires the fields and their messages.
-- Screen 3: two conditional review rows, placed so "Account" stays the last visible row.
-- `data-req` updated — screen 2: `+REQ-009, +BR-06`; screen 3: `+REQ-009`; `data-rule` added to the new elements. `app.js` traceability header updated.
-- No framework, build step, or CDN; `assets/screens.css` untouched and still shared.
+- New **screen 3 "Risk rating"** — three 74px option cards with colour bars (green/ochre/brand) for sunlight scanning and real radios for keyboard/arrow-key use.
+- Conditional **escalation panel** revealed only for High potential; entered values are retained if the rating is mis-tapped, but never validated or shown while withdrawn.
+- Review gained a Risk rating row (colour-coded pill) plus an "Escalated — supervisor notified" card, hidden for other ratings. A fade cue appears only while the declaration sits below the fold.
+- Journey renumbered to Step 1/2/3 of 3 with 33/66/100% progress; trace strip auto-reads "of 5".
 
-**Verification** (real browsers, `file://`): 45 automated checks pass in bundled Chromium and in installed Microsoft Edge — both journeys end-to-end, validation gating, review playback, REQ-008 data retention, BR-04 gating, trace chips, no clipping at 390×844 or in a 900×720 window, zero console errors.
+**Traceability** — `data-req` updated: risk = `REQ-009, REQ-004, REQ-008, BR-06`; review gained `REQ-009`. Trace line now `BRD-2026-031 v1.1`. All 9 REQs and 6 BRs trace to a screen.
+
+`assets/screens.css`, `prototype/` and both BRDs are byte-for-byte untouched; no framework, build step or CDN. 61 assertions pass with a clean console; scratch harness removed.
 
 
 
-Changes    +551 -31
-AI Credits 538 (16m 22s)
-Tokens     ↑ 6.1m (5.9m cached, 138.7k written) • ↓ 60.2k (28.8k reasoning)
-Resume     copilot --resume=aa1374c9-dbef-4c49-aeec-c52cf84b4cb8
+Changes    +1034 -80
+AI Credits 737 (24m 19s)
+Tokens     ↑ 8.5m (8.3m cached, 176.1k written) • ↓ 82.2k (43.1k reasoning)
+Resume     copilot --resume=73350e2f-e36b-4485-b728-20d19dff20a5
 
-=== ELAPSED: 16:31 ===
+=== ELAPSED: 24:47 ===

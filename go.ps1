@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    90-second demo: a one-page BRD becomes a working click-through prototype.
+    90-second demo: a one-page BRD becomes a working mine-site safety app.
 
 .DESCRIPTION
     One command. No server, no Node, no Python, no design-tool licence, no
@@ -23,11 +23,6 @@
 .PARAMETER Manual
     Advance each beat with Enter instead of a timer. Use this when presenting
     live - it means questions can't derail the run.
-
-.PARAMETER Design
-    Open the visual design handover (design\canvas.html) instead of the BRD in
-    beat 1. Use it for design-led audiences. The BRD is the better opener for
-    business analysts, because it is an artefact they own.
 
 .PARAMETER Live
     Actually invoke Copilot CLI to rebuild the prototype from the BRD, into
@@ -52,7 +47,6 @@
 [CmdletBinding()]
 param(
     [switch]$Manual,
-    [switch]$Design,
     [switch]$Live,
     [switch]$Check,
     [switch]$NoBrowser
@@ -61,18 +55,15 @@ param(
 $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
 
-$Brd       = Join-Path $root 'brd\aurora-everyday-account-brd.html'
-$BrdV11    = Join-Path $root 'brd\aurora-everyday-account-brd-v1.1.html'
-$Canvas    = Join-Path $root 'design\canvas.html'
+$Brd       = Join-Path $root 'brd\terravale-field-hazard-report-brd.html'
+$BrdV11    = Join-Path $root 'brd\terravale-field-hazard-report-brd-v1.1.html'
 $Prototype = Join-Path $root 'prototype\index.html'
 $V2        = Join-Path $root 'prototype-v2\index.html'
 
 $Assets = @(
-    'brd\aurora-everyday-account-brd.html',
-    'brd\aurora-everyday-account-brd-v1.1.html',
+    'brd\terravale-field-hazard-report-brd.html',
+    'brd\terravale-field-hazard-report-brd-v1.1.html',
     'assets\screens.css',
-    'design\canvas.html',
-    'design\canvas.css',
     'prototype\index.html',
     'prototype\prototype.css',
     'prototype\app.js',
@@ -85,8 +76,8 @@ $Assets = @(
 
 $Prompt = 'Read the business requirements document in brd\. Build a working ' +
           'click-through prototype that satisfies every requirement and business ' +
-          'rule in it, using our existing Aurora design system. Tag each screen ' +
-          'with the requirement references it satisfies.'
+          'rule in it, using our existing Terravale design system. Tag each ' +
+          'screen with the requirement references it satisfies.'
 
 $IteratePrompt = 'The BRD has been revised to v1.1. Compare it with v1.0, work out ' +
                  'what changed, and update the prototype to match.'
@@ -94,16 +85,18 @@ $IteratePrompt = 'The BRD has been revised to v1.1. Compare it with v1.0, work o
 # Real, measured facts. Both runs are evidenced by transcripts in iteration\.
 # If you re-run either one, re-measure it - never quote a number you did not take.
 $RunOne = [ordered]@{
-    'Input'      = 'BRD-2026-014 v1.0, one page, 8 requirements + 5 rules'
-    'Wall clock' = '16 min 56 sec'
+    'Input'      = 'BRD-2026-031 v1.0, one page, 8 requirements + 5 rules'
+    'Wall clock' = '24 min 11 sec'
     'Produced'   = 'prototype\ - 3 files, no framework, no build step'
-    'Verified'   = '78 checks, headless Chromium AND installed Edge 151'
+    'Verified'   = '135 checks, headless Chromium AND installed Edge'
+    'Found'      = '4 real defects, incl. an accessibility bug - all fixed'
 }
 $RunTwo = [ordered]@{
-    'Input'      = 'BRD v1.1 - adds REQ-009 (joint account) and BR-06'
-    'Wall clock' = '16 min 31 sec'
-    'Produced'   = 'prototype-v2\ - +551 / -31 lines'
-    'Verified'   = '45 checks, both browsers, v1.0 prototype untouched'
+    'Input'      = 'BRD v1.1 - adds REQ-009 (risk rating) and BR-06'
+    'Wall clock' = '24 min 47 sec'
+    'Produced'   = 'prototype-v2\ - a new Risk rating step, +1034 / -80'
+    'Verified'   = '61 checks, Chromium + installed Edge'
+    'Found'      = 'a 102px overflow on the escalated review - fixed'
 }
 
 # --------------------------------------------------------------------- ui ---
@@ -205,7 +198,7 @@ function Test-Assets {
 try { Clear-Host } catch { }   # redirected/CI hosts have no console buffer
 
 Write-Host ''
-Write-Host '  ONE-PAGE BRD  ->  CLICK-THROUGH PROTOTYPE  ->  REVISED PROTOTYPE' -ForegroundColor White
+Write-Host '  ONE-PAGE BRD  ->  WORKING APP  ->  REVISED BRD  ->  REVISED APP' -ForegroundColor White
 Write-Host '  1:15 of beats. No code written by hand. No build step. No network.' -ForegroundColor DarkGray
 
 Write-Rule 'Preflight'
@@ -231,11 +224,11 @@ if ($Live) {
     Write-Rule 'Live mode'
     Write-Note 'Rebuilding the prototype from the BRD for real, in front of you.'
     Write-Note 'Output goes to prototype-live\ - prototype\ and prototype-v2\ are untouched.'
-    Write-Note 'The captured run took about 17 minutes. Do not do this in the 90s slot.'
+    Write-Note 'The captured run took about 24 minutes. Do not do this in the 90s slot.'
     Write-Host ''
 
     $livePrompt = 'Read the business requirements document at ' +
-                  'brd/aurora-everyday-account-brd.html. Build a working ' +
+                  'brd/terravale-field-hazard-report-brd.html. Build a working ' +
                   'click-through prototype in a new folder called prototype-live ' +
                   'that satisfies every requirement REQ-001 to REQ-008 and every ' +
                   'business rule BR-01 to BR-05. It must run straight from the ' +
@@ -273,17 +266,12 @@ Write-Rule 'Run'
 
 # ---- Beat 1 -----------------------------------------------------------------
 Write-Beat '0:00' 'THE BUSINESS ASSET'
-if ($Design) {
-    Open-Page $Canvas 'the design handover - four frames, read-only'
-    Write-Say 'This is what design handed over on Friday. Four screens.'
-    Write-Say 'Go on - click the Get started button. Nothing happens.'
-} else {
-    Open-Page $Brd 'BRD-2026-014 v1.0 - one page, approved for build'
-    Write-Say 'One page. Eight requirements, five business rules, approved.'
-    Write-Say 'Your BA wrote this. Everybody signed it.'
-    Write-Note 'And now it waits in a queue until a developer is free.'
-}
-Write-Note 'Nobody in that approval chain has ever used the thing they approved.'
+Open-Page $Brd 'BRD-2026-031 v1.0 - one page, approved for build'
+Write-Say 'One page. Eight requirements, five business rules, approved.'
+Write-Say 'Your BA wrote this. Everyone signed it.'
+Write-Note 'Hazards are on paper triplicate forms today. 38% arrive incomplete'
+Write-Note 'or illegible, and the supervisor hears about it 9.4 hours later.'
+Write-Note 'And this document now waits in a queue until a developer is free.'
 Wait-Beat 15
 
 # ---- Beat 2 -----------------------------------------------------------------
@@ -300,11 +288,11 @@ Write-Note 'Measured, not staged. The transcript is in iteration\.'
 Wait-Beat 12
 
 # ---- Beat 3 -----------------------------------------------------------------
-Write-Beat '0:27' 'THE PROTOTYPE'
-Open-Page $Prototype 'the click-through prototype, built from the BRD'
-Write-Say 'Click Get started. Type a name. Leave the email blank - it stops you.'
+Write-Beat '0:27' 'THE APP'
+Open-Page $Prototype 'Terravale Field, built from the BRD'
+Write-Say 'Start a hazard report. Leave the email blank - it refuses you.'
 Write-Say 'The review screen shows what YOU typed. REQ-005, and it holds.'
-Write-Say 'Look under the phone: every screen tags the requirements it satisfies.'
+Write-Say 'Look under the phone: every screen tags the requirements it meets.'
 Write-Note 'Tick "Show BRD refs on the screen" to label them in place.'
 Write-Note 'Presenter shortcut: press "d" to fill the form instantly.'
 Wait-Beat 26
@@ -321,10 +309,10 @@ foreach ($k in $RunTwo.Keys) {
 }
 Write-Host ''
 Open-Page $V2 'version 2 - built from the revised BRD'
-Write-Say 'The analyst changed the DOCUMENT. Not the code. Not a ticket.'
-Write-Say 'Pick "Joint Everyday Account" - two fields appear, and they validate.'
-Write-Say 'Review now shows both applicants. The trace chips include REQ-009.'
-Write-Note 'The BRD stays the source of truth. The build follows it.'
+Write-Say 'HSE want high-potential hazards escalated. The BA edits the DOCUMENT.'
+Write-Say 'Pick "High potential" - supervisor fields appear, and they validate.'
+Write-Say 'Review shows who was notified. The trace chips now include REQ-009.'
+Write-Note 'Nobody wrote a change request in code. The BRD stays the source of truth.'
 Wait-Beat 22
 
 $sw.Stop()
@@ -339,5 +327,5 @@ Write-Host ''
 Write-Host '  Run again       : .\go.ps1' -ForegroundColor DarkGray
 Write-Host '  Present live    : .\go.ps1 -Manual      (Enter advances each beat)' -ForegroundColor DarkGray
 Write-Host '  Audit the claims: iteration\ (both full session transcripts)' -ForegroundColor DarkGray
-Write-Host '  Design-led room: .\go.ps1 -Design       (opens the visual handover instead)' -ForegroundColor DarkGray
+Write-Host '  Rebuild it live: .\go.ps1 -Live        (workshop mode, ~24 minutes)' -ForegroundColor DarkGray
 Write-Host ''
