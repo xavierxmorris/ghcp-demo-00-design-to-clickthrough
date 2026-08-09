@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BRD-2026-014 — Aurora Everyday Account, digital origination</title>
+<meta name="description" content="Business Requirements Document: online everyday account origination.">
+<style>
+  /* Deliberately self-contained. This document shares NO stylesheet, tokens or
+     markup with the prototype - it is an independent business input. */
+  :root {
+    --ink: #16181d;
+    --muted: #5b6270;
+    --rule: #d6dae2;
+    --band: #f2f4f8;
+    --accent: #1f4fd8;
+    --page: 210mm;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 28px 16px 56px;
+    background: #8f949e;
+    font-family: "Aptos", "Segoe UI", "Calibri", system-ui, sans-serif;
+    font-size: 10.2pt;
+    line-height: 1.42;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    width: var(--page);
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 17mm 16mm 14mm;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,.28), 0 18px 50px rgba(0,0,0,.30);
+  }
+
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    padding-bottom: 8px;
+    border-bottom: 2.5px solid var(--accent);
+  }
+  .masthead .doctype {
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .masthead h1 {
+    margin: 3px 0 0;
+    font-size: 16.5pt;
+    line-height: 1.18;
+    letter-spacing: -.2px;
+  }
+  .masthead .sub { margin: 3px 0 0; font-size: 9pt; color: var(--muted); }
+  .masthead .ref { text-align: right; font-size: 8.4pt; color: var(--muted); white-space: nowrap; }
+  .masthead .ref b { display: block; font-size: 10pt; color: var(--ink); }
+
+  .control {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    border: 1px solid var(--rule);
+    border-left: 0;
+    margin: 10px 0 14px;
+  }
+  .control div { padding: 5px 8px; border-left: 1px solid var(--rule); }
+  .control dt {
+    font-size: 7.4pt; font-weight: 700; letter-spacing: .7px;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .control dd { margin: 1px 0 0; font-size: 9pt; font-weight: 600; }
+  .status-approved { color: #0a7a4e; }
+
+  h2 {
+    margin: 13px 0 5px;
+    font-size: 10.4pt;
+    letter-spacing: .2px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  h2 .n { color: var(--muted); margin-right: 5px; font-weight: 600; }
+  p { margin: 0 0 6px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 22px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 4px 0 2px; font-size: 9.2pt; }
+  th {
+    text-align: left;
+    background: var(--band);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 4px 7px;
+    font-size: 7.6pt;
+    letter-spacing: .7px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  td { padding: 4px 7px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  td.id { font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  td.pri { white-space: nowrap; font-weight: 600; font-size: 8.4pt; }
+  .must   { color: #b4231f; }
+  .should { color: #9a6210; }
+
+  ul { margin: 3px 0 6px; padding-left: 17px; }
+  li { margin: 0 0 2px; }
+
+  .swatches { display: flex; gap: 12px; margin: 4px 0 6px; flex-wrap: wrap; }
+  .swatches span { display: flex; align-items: center; gap: 5px; font-size: 8.6pt; font-variant-numeric: tabular-nums; }
+  .swatches i { width: 13px; height: 13px; border-radius: 3px; border: 1px solid rgba(0,0,0,.16); }
+
+  .note {
+    margin: 8px 0 0;
+    padding: 7px 10px;
+    background: var(--band);
+    border-left: 3px solid var(--accent);
+    font-size: 8.8pt;
+  }
+  .signoff {
+    margin-top: 14px;
+    padding-top: 8px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    font-size: 8.4pt;
+    color: var(--muted);
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .page { box-shadow: none; width: auto; padding: 0; }
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <header class="masthead">
+    <div>
+      <div class="doctype">Business Requirements Document</div>
+      <h1>Everyday Account &mdash; digital origination</h1>
+      <p class="sub">Aurora Bank &middot; Retail Deposits &middot; Customer Acquisition</p>
+    </div>
+    <div class="ref">
+      <b>BRD-2026-014</b>
+      Version 1.0<br>
+      9 August 2026
+    </div>
+  </header>
+
+  <dl class="control">
+    <div><dt>Author</dt><dd>P. Raman, Business Analyst</dd></div>
+    <div><dt>Sponsor</dt><dd>Head of Retail Deposits</dd></div>
+    <div><dt>Status</dt><dd class="status-approved">Approved for build</dd></div>
+    <div><dt>Release</dt><dd>FY26 Q4</dd></div>
+    <div><dt>Classification</dt><dd>Internal</dd></div>
+  </dl>
+
+  <h2><span class="n">1.</span> Purpose</h2>
+  <p>
+    Customers can currently only open an Everyday Account in branch or by phone.
+    Abandonment in the phone channel is 41%. This document specifies the business
+    requirements for a self-service digital origination journey on mobile, to be
+    delivered as a click-through prototype for stakeholder sign-off before build.
+  </p>
+
+  <div class="two-col">
+    <div>
+      <h2><span class="n">2.</span> In scope</h2>
+      <ul>
+        <li>Mobile web, single applicant</li>
+        <li>Everyday Account and its variants</li>
+        <li>Capture, review and confirmation of an application</li>
+      </ul>
+    </div>
+    <div>
+      <h2><span class="n">3.</span> Out of scope</h2>
+      <ul>
+        <li>Identity verification and credit decisioning</li>
+        <li>Core banking integration &mdash; no data is submitted</li>
+        <li>Existing-customer authentication</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2><span class="n">4.</span> Business requirements</h2>
+  <table>
+    <thead>
+      <tr><th style="width:62px">Ref</th><th>Requirement</th><th style="width:60px">Priority</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="id">REQ-001</td>
+        <td>The journey shall open with a product introduction screen stating the account name and its three headline benefits: no monthly account fee, opening in under five minutes, and an instant digital card.</td>
+        <td class="pri must">Must</td>
+      </tr>
+      <tr>
+        <td class="id">REQ-002</td>
+        <td>The customer shall be able to start an application from the introduction screen in a single action.</td>
+        <td class="pri must">Must</td>
+      </tr>
+      <tr>
+        <td class="id">REQ-003</td>
+        <td>The application shall capture the applicant&rsquo;s full name, email address and date of birth, and shall allow selection of an account type from: Everyday Account; Everyday Account + Savings; Student Everyday Account.</td>
+        <td class="pri must">Must</td>
+      </tr>
+      <tr>
+        <td class="id">REQ-004</td>
+        <td>The customer shall be prevented from progressing while any mandatory field is missing or invalid, and shall be shown which field is at fault and why.</td>
+        <td class="pri must">Must</td>
+      </tr>
+      <tr>
+        <td class="id">REQ-005</td>
+        <td>Before submission the customer shall be shown a review screen displaying every value they entered, for confirmation.</td>
+        <td class="pri must">Must</td>
+      </tr>
+      <tr>
+        <td class="id">REQ-006</td>
+        <td>The customer shall explicitly accept the Product Disclosure Statement and Target Market Determination before the application can be submitted.</td>
+        <td class="pri must">Must</td>
+      </tr>
+      <tr>
+        <td class="id">REQ-007</td>
+        <td>On submission the customer shall be shown a confirmation screen containing their new BSB and account number, and an option to add the digital card to their wallet.</td>
+        <td class="pri must">Must</td>
+      </tr>
+      <tr>
+        <td class="id">REQ-008</td>
+        <td>The customer shall be able to see how far through the application they are, and to return to a previous step without losing entered data.</td>
+        <td class="pri should">Should</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2><span class="n">5.</span> Business rules</h2>
+  <table>
+    <thead>
+      <tr><th style="width:62px">Ref</th><th>Rule</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="id">BR-01</td><td>Full name is mandatory and must be at least two characters.</td></tr>
+      <tr><td class="id">BR-02</td><td>Email address is mandatory and must be a structurally valid address.</td></tr>
+      <tr><td class="id">BR-03</td><td>Date of birth is mandatory and must be entered as DD / MM / YYYY.</td></tr>
+      <tr><td class="id">BR-04</td><td>The application cannot be submitted until the disclosure acceptance in REQ-006 is given.</td></tr>
+      <tr><td class="id">BR-05</td><td>No application data is transmitted or stored. This is a prototype for sign-off only.</td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="n">6.</span> Brand and visual direction</h2>
+  <p>
+    The journey shall use the existing Aurora mobile design system without
+    modification &mdash; the same colour styles, type scale and spacing already in
+    use across the Aurora app. Target frame is 390 &times; 844.
+  </p>
+  <div class="swatches">
+    <span><i style="background:#6E56F8"></i> brand/500 #6E56F8</span>
+    <span><i style="background:#2FB6FF"></i> cyan/400 #2FB6FF</span>
+    <span><i style="background:#43E5C4"></i> mint/400 #43E5C4</span>
+    <span><i style="background:#0B1020"></i> ink/900 #0B1020</span>
+  </div>
+
+  <h2><span class="n">7.</span> Acceptance criteria</h2>
+  <ul>
+    <li>A stakeholder can complete the journey end to end on a phone-sized screen without assistance.</li>
+    <li>Every screen traces to at least one requirement reference above.</li>
+    <li>Invalid input is refused with a visible, specific message (REQ-004, BR-01 to BR-03).</li>
+    <li>The review screen shows the data the tester actually entered, not sample data (REQ-005).</li>
+  </ul>
+
+  <p class="note">
+    <strong>Note for delivery:</strong> this is a sign-off prototype, not a
+    production build. No backend, no data capture, no integration. It exists so
+    the business can agree the journey before development is scheduled.
+  </p>
+
+  <div class="signoff">
+    <span>Prepared by P. Raman &middot; Business Analyst</span>
+    <span>BRD-2026-014 &middot; v1.0 &middot; Page 1 of 1</span>
+  </div>
+
+</main>
+</body>
+</html>

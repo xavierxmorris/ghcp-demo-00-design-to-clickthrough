@@ -1,31 +1,38 @@
 <#
 .SYNOPSIS
-    90-second demo: a design file becomes a working click-through prototype.
+    90-second demo: a one-page BRD becomes a working click-through prototype.
 
 .DESCRIPTION
-    One command. No server, no Node, no Python, no design-tool licence, no network.
-    The pages run straight off the filesystem, so this works on a locked-down
-    laptop and on conference wifi that has given up.
+    One command. No server, no Node, no Python, no design-tool licence, no
+    network. The pages run straight off the filesystem, so this works on a
+    locked-down laptop and on conference wifi that has given up.
 
     Beats:
-      1. The handover   - four static design frames. Click one. Nothing happens.
+      1. The BRD        - a one-page business requirements document. Familiar,
+                          approved, and completely un-clickable.
       2. The ask        - one plain-English sentence. No code, no ticket.
-      3. The prototype  - the same four screens, now usable.
-      4. The iteration  - a real change request, really made by Copilot, and
-                          the changed prototype opened beside it.
+      3. The prototype  - the journey, working, with every screen traceable back
+                          to a requirement reference.
+      4. The revision   - the BA edits the BRD, not the code. v1.1 adds REQ-009,
+                          and the prototype follows.
 
-    Beat 4 is the important one. The v2 prototype in prototype-v2\ was genuinely
-    produced by Copilot from the change request below - the full transcript is in
-    iteration\copilot-run.log. Nothing in this script pretends to generate code.
+    Both prototypes were genuinely produced by Copilot from the documents in
+    brd\. The full session transcripts are in iteration\. Nothing in this script
+    pretends to generate code - it opens pages and prints presenter cues.
 
 .PARAMETER Manual
     Advance each beat with Enter instead of a timer. Use this when presenting
     live - it means questions can't derail the run.
 
+.PARAMETER Design
+    Open the visual design handover (design\canvas.html) instead of the BRD in
+    beat 1. Use it for design-led audiences. The BRD is the better opener for
+    business analysts, because it is an artefact they own.
+
 .PARAMETER Live
-    Actually invoke Copilot CLI to regenerate the prototype from the design
-    frames, into prototype-live\. Takes minutes, not seconds, and the output
-    varies run to run. Great for a workshop, wrong for a 90-second slot.
+    Actually invoke Copilot CLI to rebuild the prototype from the BRD, into
+    prototype-live\. Took ~17 minutes when captured. Great for a workshop,
+    wrong for a 90-second slot.
 
 .PARAMETER Check
     Validate the demo assets and exit. Prints a verdict and sets the exit code.
@@ -35,7 +42,7 @@
 
 .EXAMPLE
     .\go.ps1
-    The full 90-second timed run.
+    The full timed run.
 
 .EXAMPLE
     .\go.ps1 -Manual
@@ -45,6 +52,7 @@
 [CmdletBinding()]
 param(
     [switch]$Manual,
+    [switch]$Design,
     [switch]$Live,
     [switch]$Check,
     [switch]$NoBrowser
@@ -53,12 +61,15 @@ param(
 $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
 
+$Brd       = Join-Path $root 'brd\aurora-everyday-account-brd.html'
+$BrdV11    = Join-Path $root 'brd\aurora-everyday-account-brd-v1.1.html'
 $Canvas    = Join-Path $root 'design\canvas.html'
 $Prototype = Join-Path $root 'prototype\index.html'
 $V2        = Join-Path $root 'prototype-v2\index.html'
-$RunLog    = Join-Path $root 'iteration\copilot-run.log'
 
 $Assets = @(
+    'brd\aurora-everyday-account-brd.html',
+    'brd\aurora-everyday-account-brd-v1.1.html',
     'assets\screens.css',
     'design\canvas.html',
     'design\canvas.css',
@@ -68,26 +79,31 @@ $Assets = @(
     'prototype-v2\index.html',
     'prototype-v2\prototype.css',
     'prototype-v2\app.js',
-    'iteration\copilot-run.log'
+    'iteration\copilot-run-01-brd-to-prototype.log',
+    'iteration\copilot-run-02-brd-v11-to-v2.log'
 )
 
-$Prompt = 'Here are four design frames for the Aurora everyday-account signup. ' +
-          'Turn them into a working click-through prototype I can send round for ' +
-          'sign-off: the buttons should move between screens, the form should ' +
-          'validate, and the review screen should show what I actually typed.'
+$Prompt = 'Read the business requirements document in brd\. Build a working ' +
+          'click-through prototype that satisfies every requirement and business ' +
+          'rule in it, using our existing Aurora design system. Tag each screen ' +
+          'with the requirement references it satisfies.'
 
-$IteratePrompt = 'Add a joint account option. When the customer chooses a joint ' +
-                 'account, ask for the second applicant''s name and email, ' +
-                 'validate them the same way, and show them on the review screen.'
+$IteratePrompt = 'The BRD has been revised to v1.1. Compare it with v1.0, work out ' +
+                 'what changed, and update the prototype to match.'
 
-# Real, measured facts about the run that produced prototype-v2\.
-# If you re-run it, update these - never quote a number you did not measure.
-$RunFacts = [ordered]@{
-    'Captured'   = '9 August 2026'
-    'Wall clock' = '9 min 34 sec'
-    'Changed'    = '3 files, +105 / -5 lines'
-    'Verified'   = "30 / 30 of Copilot's own browser checks"
-    'Transcript' = 'iteration\copilot-run.log (187 lines)'
+# Real, measured facts. Both runs are evidenced by transcripts in iteration\.
+# If you re-run either one, re-measure it - never quote a number you did not take.
+$RunOne = [ordered]@{
+    'Input'      = 'BRD-2026-014 v1.0, one page, 8 requirements + 5 rules'
+    'Wall clock' = '16 min 56 sec'
+    'Produced'   = 'prototype\ - 3 files, no framework, no build step'
+    'Verified'   = '78 checks, headless Chromium AND installed Edge 151'
+}
+$RunTwo = [ordered]@{
+    'Input'      = 'BRD v1.1 - adds REQ-009 (joint account) and BR-06'
+    'Wall clock' = '16 min 31 sec'
+    'Produced'   = 'prototype-v2\ - +551 / -31 lines'
+    'Verified'   = '45 checks, both browsers, v1.0 prototype untouched'
 }
 
 # --------------------------------------------------------------------- ui ---
@@ -177,9 +193,9 @@ function Test-Assets {
         $full = Join-Path $root $rel
         if (Test-Path $full) {
             $size = (Get-Item $full).Length
-            Write-Ok ("{0,-26} {1,7:N0} bytes" -f $rel, $size)
+            Write-Ok ("{0,-46} {1,7:N0} bytes" -f $rel, $size)
         } else {
-            Write-Fail ("{0,-26} missing" -f $rel)
+            Write-Fail ("{0,-46} missing" -f $rel)
             $failed++
         }
     }
@@ -189,8 +205,8 @@ function Test-Assets {
 try { Clear-Host } catch { }   # redirected/CI hosts have no console buffer
 
 Write-Host ''
-Write-Host '  DESIGN FILE  ->  CLICK-THROUGH PROTOTYPE' -ForegroundColor White
-Write-Host '  75 seconds. No code written by hand. No build step. No network.' -ForegroundColor DarkGray
+Write-Host '  ONE-PAGE BRD  ->  CLICK-THROUGH PROTOTYPE  ->  REVISED PROTOTYPE' -ForegroundColor White
+Write-Host '  1:15 of beats. No code written by hand. No build step. No network.' -ForegroundColor DarkGray
 
 Write-Rule 'Preflight'
 $failed = Test-Assets
@@ -213,16 +229,21 @@ if ($Check) {
 
 if ($Live) {
     Write-Rule 'Live mode'
-    Write-Note 'Re-running the iteration for real, in front of you.'
+    Write-Note 'Rebuilding the prototype from the BRD for real, in front of you.'
     Write-Note 'Output goes to prototype-live\ - prototype\ and prototype-v2\ are untouched.'
-    Write-Note 'The captured run took about 10 minutes. Do not do this in the 90s slot.'
+    Write-Note 'The captured run took about 17 minutes. Do not do this in the 90s slot.'
     Write-Host ''
 
-    $livePrompt = 'Copy the prototype folder to a new folder called prototype-live, ' +
-                  'then make this change in prototype-live only: ' + $IteratePrompt +
-                  ' Keep the existing visual style exactly - reuse assets/screens.css, ' +
-                  'and add no framework, library, build step or CDN. Do not modify ' +
-                  'anything in the original prototype folder.'
+    $livePrompt = 'Read the business requirements document at ' +
+                  'brd/aurora-everyday-account-brd.html. Build a working ' +
+                  'click-through prototype in a new folder called prototype-live ' +
+                  'that satisfies every requirement REQ-001 to REQ-008 and every ' +
+                  'business rule BR-01 to BR-05. It must run straight from the ' +
+                  'filesystem with no server, framework, library, build step or ' +
+                  'CDN. Use the existing design system at assets/screens.css ' +
+                  'unmodified. Tag each screen with a data-req attribute listing ' +
+                  'the requirements it satisfies. Do not modify the prototype or ' +
+                  'prototype-v2 folders. Verify in a real browser before finishing.'
 
     Write-Host '  copilot -p "<the prompt below>" --allow-all-tools' -ForegroundColor Yellow
     Write-Host ''
@@ -251,11 +272,18 @@ $sw = [System.Diagnostics.Stopwatch]::StartNew()
 Write-Rule 'Run'
 
 # ---- Beat 1 -----------------------------------------------------------------
-Write-Beat '0:00' 'THE HANDOVER'
-Open-Page $Canvas 'the design handover - four frames, read-only'
-Write-Say 'This is what design handed over on Friday. Four screens.'
-Write-Say 'Go on - click the Get started button. Nothing happens.'
-Write-Note 'It is a picture of an app. Everyone signs it off, nobody has used it.'
+Write-Beat '0:00' 'THE BUSINESS ASSET'
+if ($Design) {
+    Open-Page $Canvas 'the design handover - four frames, read-only'
+    Write-Say 'This is what design handed over on Friday. Four screens.'
+    Write-Say 'Go on - click the Get started button. Nothing happens.'
+} else {
+    Open-Page $Brd 'BRD-2026-014 v1.0 - one page, approved for build'
+    Write-Say 'One page. Eight requirements, five business rules, approved.'
+    Write-Say 'Your BA wrote this. Everybody signed it.'
+    Write-Note 'And now it waits in a queue until a developer is free.'
+}
+Write-Note 'Nobody in that approval chain has ever used the thing they approved.'
 Wait-Beat 15
 
 # ---- Beat 2 -----------------------------------------------------------------
@@ -263,37 +291,40 @@ Write-Beat '0:15' 'THE ASK'
 Write-Host ''
 Write-Host "  $Prompt" -ForegroundColor Yellow
 Write-Host ''
-Write-Say 'That is the whole instruction. One sentence, plain English.'
-Write-Note 'No ticket. No sprint. Nobody wrote code by hand.'
+foreach ($k in $RunOne.Keys) {
+    Write-Host ('          {0,-11} {1}' -f $k, $RunOne[$k]) -ForegroundColor Green
+}
+Write-Host ''
+Write-Say 'One sentence. The BRD is the input - not a spec someone rewrote.'
+Write-Note 'Measured, not staged. The transcript is in iteration\.'
 Wait-Beat 12
 
 # ---- Beat 3 -----------------------------------------------------------------
 Write-Beat '0:27' 'THE PROTOTYPE'
-Open-Page $Prototype 'the click-through prototype'
-Write-Say 'Same four screens. Now click Get started.'
-Write-Say 'Type a name. Leave the email blank - it stops you.'
-Write-Say 'And on the review screen: that is what YOU typed, not Jordan Blake.'
-Write-Note 'Presenter shortcut: press "d" in the browser to fill the form instantly.'
-Write-Note 'A design file cannot do that. This one remembers.'
+Open-Page $Prototype 'the click-through prototype, built from the BRD'
+Write-Say 'Click Get started. Type a name. Leave the email blank - it stops you.'
+Write-Say 'The review screen shows what YOU typed. REQ-005, and it holds.'
+Write-Say 'Look under the phone: every screen tags the requirements it satisfies.'
+Write-Note 'Tick "Show BRD refs on the screen" to label them in place.'
+Write-Note 'Presenter shortcut: press "d" to fill the form instantly.'
 Wait-Beat 26
 
 # ---- Beat 4 -----------------------------------------------------------------
-# The honest core of the demo: a real change request, really executed by
-# Copilot, with the resulting build opened side by side.
-Write-Beat '0:53' 'THE ITERATION'
+# The honest core: the analyst edits the BUSINESS ASSET, and the build follows.
+Write-Beat '0:53' 'THE REVISION'
+Open-Page $BrdV11 'BRD v1.1 - REQ-009 and BR-06, change-barred'
 Write-Host ''
 Write-Host "  $IteratePrompt" -ForegroundColor Yellow
 Write-Host ''
-Write-Host '        Copilot actually ran this. Measured, not staged:' -ForegroundColor DarkGray
-foreach ($k in $RunFacts.Keys) {
-    Write-Host ('          {0,-11} {1}' -f $k, $RunFacts[$k]) -ForegroundColor Green
+foreach ($k in $RunTwo.Keys) {
+    Write-Host ('          {0,-11} {1}' -f $k, $RunTwo[$k]) -ForegroundColor Green
 }
 Write-Host ''
-Open-Page $V2 'version 2 - built by Copilot from that sentence'
-Write-Say 'Pick "Joint Everyday Account" in the dropdown.'
-Write-Say 'Two new fields appear, they validate, and they reach the review screen.'
-Write-Note 'That is a stakeholder changing their mind, answered in minutes.'
-Write-Note "Transcript is in the repo if anyone wants to audit it."
+Open-Page $V2 'version 2 - built from the revised BRD'
+Write-Say 'The analyst changed the DOCUMENT. Not the code. Not a ticket.'
+Write-Say 'Pick "Joint Everyday Account" - two fields appear, and they validate.'
+Write-Say 'Review now shows both applicants. The trace chips include REQ-009.'
+Write-Note 'The BRD stays the source of truth. The build follows it.'
 Wait-Beat 22
 
 $sw.Stop()
@@ -302,11 +333,11 @@ Write-Host ''
 Write-Rule
 Write-Host ''
 Write-Host ('  DONE - {0:mm\:ss} elapsed' -f $sw.Elapsed) -ForegroundColor Green
-Write-Host '  Design handover -> working prototype -> revised prototype,' -ForegroundColor DarkGray
+Write-Host '  BRD -> working prototype -> revised BRD -> revised prototype,' -ForegroundColor DarkGray
 Write-Host '  with nobody writing code by hand at any point.' -ForegroundColor DarkGray
 Write-Host ''
 Write-Host '  Run again       : .\go.ps1' -ForegroundColor DarkGray
 Write-Host '  Present live    : .\go.ps1 -Manual      (Enter advances each beat)' -ForegroundColor DarkGray
-Write-Host '  Audit the claim : iteration\copilot-run.log' -ForegroundColor DarkGray
-Write-Host '  Do it again live: .\go.ps1 -Live        (workshop mode, ~10 minutes)' -ForegroundColor DarkGray
+Write-Host '  Audit the claims: iteration\ (both full session transcripts)' -ForegroundColor DarkGray
+Write-Host '  Design-led room: .\go.ps1 -Design       (opens the visual handover instead)' -ForegroundColor DarkGray
 Write-Host ''

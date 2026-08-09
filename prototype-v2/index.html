@@ -3,173 +3,272 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aurora — Everyday Account · Click-through prototype</title>
-<meta name="description" content="A working click-through prototype generated from the Aurora design frames.">
+<title>Aurora &mdash; Everyday Account &middot; click-through prototype</title>
+<meta name="description" content="Working click-through prototype for BRD-2026-014: Everyday Account digital origination. Runs from the filesystem. No data is sent or stored.">
+<!-- The Aurora design system, exactly as handed over. Not modified. -->
 <link rel="stylesheet" href="../assets/screens.css">
 <link rel="stylesheet" href="prototype.css">
 </head>
 <body>
 
-<header class="stage-head">
-  <span class="stage-badge"><span class="live" aria-hidden="true"></span> Click-through prototype</span>
-  <h1>Same four screens &mdash; now you can actually use them.</h1>
-  <p>Type your own details. The review screen remembers what you entered, because this is running code, not a picture.</p>
-</header>
+<div class="stage">
 
-<div class="device">
-  <main class="frame">
-    <div class="status-bar">
-      <span>9:41</span>
-      <span class="dots" aria-hidden="true"><i></i><i></i><i></i><span class="battery"></span></span>
+  <header class="stage-head">
+    <div class="stage-title">Aurora &mdash; Everyday Account</div>
+    <div class="stage-sub">Click-through prototype &middot; BRD&#8209;2026&#8209;014 v1.1</div>
+    <div class="stage-badge" title="BR-05: no application data is transmitted or stored.">Nothing is sent or stored &middot; BR&#8209;05</div>
+  </header>
+
+  <div class="device-wrap">
+    <div class="device">
+
+      <!-- ======================================================= 01 Welcome -->
+      <section id="screen-1"
+               class="frame screen is-active"
+               data-screen="1"
+               data-name="Welcome"
+               data-req="REQ-001, REQ-002, BR-05"
+               aria-label="Screen 1 of 4, Welcome">
+        <div class="status-bar">
+          <span>9:41</span>
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i><span class="battery"></span></span>
+        </div>
+        <div class="frame-body">
+          <div class="brandmark"><span class="glyph"></span> Aurora</div>
+
+          <p class="eyebrow" style="margin-top:22px">Everyday Account</p>
+          <h1 class="display" data-focus tabindex="-1">Banking that <span class="grad">moves</span> with you.</h1>
+
+          <div class="hero-art">
+            <span class="orb orb-a" aria-hidden="true"></span>
+            <span class="orb orb-b" aria-hidden="true"></span>
+            <span class="orb orb-c" aria-hidden="true"></span>
+            <div class="hero-card">
+              <div class="row">
+                <span class="label">Everyday</span>
+                <span class="label">+2.4%</span>
+              </div>
+              <div class="row" style="margin-top:2px">
+                <span class="amount">$4,820.60</span>
+              </div>
+              <div class="bar"></div>
+            </div>
+          </div>
+
+          <!-- REQ-001: the three headline benefits -->
+          <ul class="value-list" data-rule="REQ-001">
+            <li><span class="tick">&#10003;</span> No monthly account fee</li>
+            <li><span class="tick">&#10003;</span> Open in under 5 minutes</li>
+            <li><span class="tick">&#10003;</span> Instant digital card</li>
+          </ul>
+
+          <div class="frame-actions">
+            <!-- REQ-002: start the application in a single action -->
+            <button type="button" class="btn btn-primary" data-go="2" data-rule="REQ-002">Get started</button>
+            <p class="legal">Sign-off prototype &mdash; nothing you enter is sent or stored.</p>
+          </div>
+        </div>
+        <div class="home-indicator"></div>
+      </section>
+
+      <!-- =================================================== 02 Your details -->
+      <section id="screen-2"
+               class="frame screen"
+               data-screen="2"
+               data-name="Your details"
+               data-req="REQ-003, REQ-004, REQ-008, REQ-009, BR-01, BR-02, BR-03, BR-05, BR-06"
+               aria-label="Screen 2 of 4, Your details"
+               hidden>
+        <div class="status-bar">
+          <span>9:41</span>
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i><span class="battery"></span></span>
+        </div>
+        <div class="frame-body">
+          <!-- REQ-008: where am I, and how do I go back -->
+          <div class="frame-nav" data-rule="REQ-008">
+            <button type="button" class="nav-back" data-back="1" aria-label="Back to the previous step">&#8249;</button>
+            <span class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="2"
+                  aria-label="Step 2 of 4"><span style="width:50%"></span></span>
+            <span class="step-count">2 / 4</span>
+          </div>
+
+          <h2 class="h2" data-focus tabindex="-1">Your details</h2>
+          <p class="meta">We only ask for what we legally need.</p>
+
+          <form id="details-form" class="form-flow" novalidate autocomplete="off">
+            <!-- REQ-003: name, email, date of birth and account type -->
+            <div class="field-stack">
+              <div class="field" data-field="name">
+                <label for="f-name">Full name</label>
+                <input id="f-name" name="name" type="text" placeholder="Jordan Blake"
+                       autocomplete="off" spellcheck="false" aria-describedby="e-name">
+                <p class="field-error" id="e-name" data-rule="BR-01" role="alert" hidden></p>
+              </div>
+
+              <div class="field" data-field="email">
+                <label for="f-email">Email</label>
+                <input id="f-email" name="email" type="text" inputmode="email" placeholder="jordan@example.com"
+                       autocomplete="off" spellcheck="false" aria-describedby="e-email">
+                <p class="field-error" id="e-email" data-rule="BR-02" role="alert" hidden></p>
+              </div>
+
+              <div class="field" data-field="dob">
+                <label for="f-dob">Date of birth</label>
+                <input id="f-dob" name="dob" type="text" inputmode="numeric" placeholder="DD / MM / YYYY"
+                       maxlength="14" autocomplete="off" aria-describedby="h-dob e-dob">
+                <p class="hint" id="h-dob">Enter it as DD / MM / YYYY.</p>
+                <p class="field-error" id="e-dob" data-rule="BR-03" role="alert" hidden></p>
+              </div>
+
+              <!-- REQ-009: the list also offers a Joint Everyday Account -->
+              <div class="field" data-field="account" data-rule="REQ-003, REQ-009">
+                <label for="f-account">Account type</label>
+                <select id="f-account" name="account">
+                  <option value="Everyday Account">Everyday Account</option>
+                  <option value="Everyday Account + Savings">Everyday Account + Savings</option>
+                  <option value="Student Everyday Account">Student Everyday Account</option>
+                  <option value="Joint Everyday Account">Joint Everyday Account</option>
+                </select>
+              </div>
+
+              <!-- REQ-009 / BR-06: asked for only while a joint account is selected -->
+              <div class="joint-group" id="joint-group" data-rule="REQ-009" hidden>
+                <p class="group-label">Second applicant</p>
+
+                <div class="field" data-field="name2">
+                  <label for="f-name2">Their full name</label>
+                  <input id="f-name2" name="name2" type="text" placeholder="Sam Okafor"
+                         autocomplete="off" spellcheck="false" aria-describedby="e-name2">
+                  <p class="field-error" id="e-name2" data-rule="BR-06" role="alert" hidden></p>
+                </div>
+
+                <div class="field" data-field="email2">
+                  <label for="f-email2">Their email</label>
+                  <input id="f-email2" name="email2" type="text" inputmode="email" placeholder="sam@example.com"
+                         autocomplete="off" spellcheck="false" aria-describedby="e-email2">
+                  <p class="field-error" id="e-email2" data-rule="BR-06" role="alert" hidden></p>
+                </div>
+              </div>
+            </div>
+
+            <div class="frame-actions">
+              <!-- REQ-004: blocked here while anything is missing or invalid -->
+              <button type="submit" class="btn btn-primary" data-rule="REQ-004">Continue</button>
+              <p class="legal">Nothing you type leaves this device.</p>
+            </div>
+          </form>
+        </div>
+        <div class="home-indicator"></div>
+      </section>
+
+      <!-- ======================================================== 03 Review -->
+      <section id="screen-3"
+               class="frame screen"
+               data-screen="3"
+               data-name="Review and consent"
+               data-req="REQ-005, REQ-006, REQ-008, REQ-009, BR-04, BR-05"
+               aria-label="Screen 3 of 4, Check and confirm"
+               hidden>
+        <div class="status-bar">
+          <span>9:41</span>
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i><span class="battery"></span></span>
+        </div>
+        <div class="frame-body">
+          <div class="frame-nav" data-rule="REQ-008">
+            <button type="button" class="nav-back" data-back="2" aria-label="Back to your details">&#8249;</button>
+            <span class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="3"
+                  aria-label="Step 3 of 4"><span style="width:75%"></span></span>
+            <span class="step-count">3 / 4</span>
+          </div>
+
+          <h2 class="h2" data-focus tabindex="-1">Check and confirm</h2>
+          <p class="meta">Nothing is submitted until you tap confirm.</p>
+
+          <!-- REQ-005: every value the customer entered, played back -->
+          <div class="summary" data-rule="REQ-005">
+            <dl>
+              <div class="item"><dt>Name</dt><dd id="r-name">&mdash;</dd></div>
+              <div class="item"><dt>Email</dt><dd id="r-email">&mdash;</dd></div>
+              <div class="item"><dt>Date of birth</dt><dd id="r-dob">&mdash;</dd></div>
+              <!-- REQ-009: both applicants are shown when the account is joint -->
+              <div class="item" id="row-name2" data-rule="REQ-009" hidden><dt>Second applicant</dt><dd id="r-name2">&mdash;</dd></div>
+              <div class="item" id="row-email2" data-rule="REQ-009" hidden><dt>Their email</dt><dd id="r-email2">&mdash;</dd></div>
+              <div class="item"><dt>Account</dt><dd id="r-account">&mdash;</dd></div>
+            </dl>
+          </div>
+
+          <!-- REQ-006 / BR-04: explicit acceptance before submission -->
+          <label class="consent" id="consent-block" data-rule="REQ-006" for="f-consent">
+            <input type="checkbox" id="f-consent" aria-describedby="e-consent">
+            <span>I agree to the Product Disclosure Statement and Target Market Determination.</span>
+          </label>
+          <p class="field-error field-error-block" id="e-consent" data-rule="BR-04" role="alert" hidden></p>
+
+          <div class="frame-actions">
+            <button type="button" class="btn btn-primary" id="confirm-btn" data-rule="BR-04">Confirm and open</button>
+            <button type="button" class="btn btn-ghost" data-back="2">Back</button>
+            <p class="legal">This prototype does not submit or store your details.</p>
+          </div>
+        </div>
+        <div class="home-indicator"></div>
+      </section>
+
+      <!-- ================================================== 04 Confirmation -->
+      <section id="screen-4"
+               class="frame screen"
+               data-screen="4"
+               data-name="Confirmation"
+               data-req="REQ-007, BR-05"
+               aria-label="Screen 4 of 4, Confirmation"
+               hidden>
+        <div class="status-bar">
+          <span>9:41</span>
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i><span class="battery"></span></span>
+        </div>
+        <div class="frame-body">
+          <div class="done-body">
+            <div class="seal" aria-hidden="true">&#10003;</div>
+            <p class="eyebrow">Account open</p>
+            <h1 class="display" data-focus tabindex="-1">You&rsquo;re all <span class="grad">set</span>.</h1>
+            <p class="lede" id="done-lede">Your digital card is ready to add to your wallet.</p>
+
+            <!-- REQ-007: the new BSB and account number -->
+            <div class="account-chip" data-rule="REQ-007">
+              <div class="label">BSB / Account</div>
+              <div class="value" id="r-account-number">032&#8209;114 &middot; 8820 4471</div>
+            </div>
+          </div>
+
+          <div class="frame-actions">
+            <!-- REQ-007: add the digital card to the wallet -->
+            <button type="button" class="btn btn-primary" id="wallet-btn" data-rule="REQ-007">Add card to wallet</button>
+            <button type="button" class="btn btn-ghost" id="home-btn">Back to home</button>
+            <p class="legal">Illustrative numbers only &mdash; no account has been opened.</p>
+          </div>
+        </div>
+        <div class="home-indicator"></div>
+
+        <p class="toast" id="toast" role="status" hidden></p>
+      </section>
+
     </div>
+  </div>
 
-    <!-- ================================================ 01 Welcome ======== -->
-    <section class="frame-body screen is-active" data-screen="welcome" aria-label="Welcome">
-      <div class="brandmark"><span class="glyph"></span> Aurora</div>
-      <p class="eyebrow" style="margin-top:22px">Everyday Account</p>
-      <h1 class="display">Banking that <span class="grad">moves</span> with you.</h1>
+  <!-- Traceability strip: read live from each screen's data-req attribute -->
+  <footer class="trace">
+    <div class="trace-line">
+      <b id="trace-step">Screen 1 of 4</b>
+      <span class="trace-name" id="trace-name">Welcome</span>
+    </div>
+    <div class="trace-refs" id="trace-refs" aria-label="Requirements satisfied by this screen"></div>
+    <label class="trace-toggle">
+      <input type="checkbox" id="trace-mode"> Show BRD refs on the screen
+    </label>
+  </footer>
 
-      <div class="hero-art">
-        <span class="orb orb-a" aria-hidden="true"></span>
-        <span class="orb orb-b" aria-hidden="true"></span>
-        <span class="orb orb-c" aria-hidden="true"></span>
-        <div class="hero-card">
-          <div class="row">
-            <span class="label">Everyday</span>
-            <span class="label">+2.4%</span>
-          </div>
-          <div class="row" style="margin-top:2px">
-            <span class="amount">$4,820.60</span>
-          </div>
-          <div class="bar"></div>
-        </div>
-      </div>
+  <p class="sr-only" role="status" id="live-region"></p>
 
-      <ul class="value-list">
-        <li><span class="tick">&#10003;</span> No monthly account fee</li>
-        <li><span class="tick">&#10003;</span> Open in under 5 minutes</li>
-        <li><span class="tick">&#10003;</span> Instant digital card</li>
-      </ul>
-
-      <div class="frame-actions">
-        <button class="btn btn-primary" data-go="details">Get started</button>
-      </div>
-    </section>
-
-    <!-- ================================================ 02 Details ======== -->
-    <section class="frame-body screen" data-screen="details" aria-label="Your details">
-      <div class="frame-nav">
-        <button class="nav-back" data-back="welcome" aria-label="Back">&#8249;</button>
-        <span class="progress"><span style="width:50%"></span></span>
-        <span class="step-count">2 / 4</span>
-      </div>
-
-      <h2 class="h2">Your details</h2>
-      <p class="meta">We only ask for what we legally need.</p>
-
-      <form class="field-stack" id="details-form" novalidate>
-        <div class="field">
-          <label for="f-name">Full name</label>
-          <input id="f-name" name="name" type="text" placeholder="Jordan Blake" autocomplete="name">
-          <span class="field-error">Please enter your full name.</span>
-        </div>
-        <div class="field">
-          <label for="f-email">Email</label>
-          <input id="f-email" name="email" type="email" placeholder="jordan@example.com" autocomplete="email">
-          <span class="field-error">Please enter a valid email address.</span>
-        </div>
-        <div class="field">
-          <label for="f-dob">Date of birth</label>
-          <input id="f-dob" name="dob" type="text" placeholder="DD / MM / YYYY" inputmode="numeric">
-          <span class="field-error">Use DD / MM / YYYY.</span>
-        </div>
-        <div class="field">
-          <label for="f-type">Account type</label>
-          <select id="f-type" name="accountType">
-            <option>Everyday Account</option>
-            <option>Everyday Account + Savings</option>
-            <option>Student Everyday Account</option>
-            <option>Joint Everyday Account</option>
-          </select>
-        </div>
-        <div class="field joint-field" data-joint hidden>
-          <label for="f-joint-name">Second applicant name</label>
-          <input id="f-joint-name" name="jointName" type="text" placeholder="Sam Rivera" autocomplete="off" disabled>
-          <span class="field-error">Please enter the second applicant&rsquo;s full name.</span>
-        </div>
-        <div class="field joint-field" data-joint hidden>
-          <label for="f-joint-email">Second applicant email</label>
-          <input id="f-joint-email" name="jointEmail" type="email" placeholder="sam@example.com" autocomplete="off" disabled>
-          <span class="field-error">Please enter a valid email address.</span>
-        </div>
-      </form>
-
-      <div class="frame-actions">
-        <button class="btn btn-primary" type="submit" form="details-form">Continue</button>
-      </div>
-    </section>
-
-    <!-- ================================================ 03 Review ========= -->
-    <section class="frame-body screen" data-screen="review" aria-label="Review">
-      <div class="frame-nav">
-        <button class="nav-back" data-back="details" aria-label="Back">&#8249;</button>
-        <span class="progress"><span style="width:75%"></span></span>
-        <span class="step-count">3 / 4</span>
-      </div>
-
-      <h2 class="h2">Check and confirm</h2>
-      <p class="meta">Nothing is submitted until you tap confirm.</p>
-
-      <div class="summary">
-        <dl>
-          <div class="item"><dt>Name</dt><dd data-bind="name">&mdash;</dd></div>
-          <div class="item"><dt>Email</dt><dd data-bind="email">&mdash;</dd></div>
-          <div class="item"><dt>Date of birth</dt><dd data-bind="dob">&mdash;</dd></div>
-          <div class="item"><dt>Account</dt><dd data-bind="accountType">&mdash;</dd></div>
-          <div class="item" data-joint-row hidden><dt>Joint applicant</dt><dd data-bind="jointName">&mdash;</dd></div>
-          <div class="item" data-joint-row hidden><dt>Joint email</dt><dd data-bind="jointEmail">&mdash;</dd></div>
-        </dl>
-      </div>
-
-      <label class="consent" id="consent">
-        <input type="checkbox" id="f-consent">
-        <span>I agree to the Product Disclosure Statement and Target Market Determination.</span>
-      </label>
-
-      <div class="frame-actions">
-        <button class="btn btn-primary" id="confirm-btn">Confirm and open</button>
-        <button class="btn btn-ghost" data-back="details">Back</button>
-      </div>
-    </section>
-
-    <!-- ================================================ 04 Confirmation === -->
-    <section class="frame-body screen" data-screen="done" aria-label="Confirmation">
-      <div class="done-body">
-        <div class="seal">&#10003;</div>
-        <p class="eyebrow">Account open</p>
-        <h1 class="display">You&rsquo;re all <span class="grad">set</span>.</h1>
-        <p class="lede" data-bind="welcome">Your digital card is ready to add to your wallet.</p>
-        <div class="account-chip">
-          <div class="label">BSB / Account</div>
-          <div class="value" data-bind="account">032&#8209;114 &middot; 8820 4471</div>
-        </div>
-      </div>
-      <div class="frame-actions">
-        <button class="btn btn-primary" id="wallet-btn">Add card to wallet</button>
-        <button class="btn btn-ghost" data-restart>Start again</button>
-      </div>
-    </section>
-
-    <div class="home-indicator"></div>
-  </main>
 </div>
-
-<footer class="stage-foot">
-  <span>Generated from <strong>4 design frames</strong> &middot; no framework, no build step</span>
-  <button type="button" data-restart>Restart</button>
-</footer>
-
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="app.js"></script>
 </body>

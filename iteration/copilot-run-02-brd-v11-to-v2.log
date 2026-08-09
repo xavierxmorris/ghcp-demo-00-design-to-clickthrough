@@ -1,0 +1,389 @@
+PROMPT: The business requirements document has been revised. Compare brd/aurora-everyday-account-brd.html (v1.0) with brd/aurora-everyday-account-brd-v1.1.html (v1.1) and identify what changed. Copy the prototype folder to a new folder called prototype-v2, then update prototype-v2 so it satisfies the revised document, including the newly added requirement and business rule. Keep everything else exactly as it is: same visual style, reuse assets/screens.css unmodified, no framework, library, build step or CDN, and it must still run straight from the filesystem. Keep the data-req traceability attributes accurate and up to date for any screen you change, and update the version reference shown in the page header to match the revised document. Do not modify the original prototype folder or either BRD. Verify your work in a real browser before you finish.
+● gel-guidance canvas ready — open it to explore the Division 1 audit.
+
+● gel-guidance canvas ready — open it to explore the Division 1 audit.
+
+I'll start by exploring the repo structure and reading both BRD versions.
+
+● List all files in repo (shell)
+  │ Get-ChildItem -Recurse -File | Select-Object FullName, Length | Format-Table -AutoSize |
+  │ Out-String -Width 200
+  └ 26 lines…
+
+● Read aurora-everyday-account-brd.html
+  │ brd\aurora-everyday-account-brd.html
+  └ 286 lines read
+
+● Read aurora-everyday-account-brd-v1.1.html
+  │ brd\aurora-everyday-account-brd-v1.1.html
+  └ 317 lines read
+
+Diff is clear: v1.1 adds REQ-009 (Joint Everyday Account) and BR-06 (second applicant validation). Now reading the prototype.
+
+● Read app.js
+  │ prototype\app.js
+  └ 456 lines read
+
+● Read index.html
+  │ prototype\index.html
+  └ 251 lines read
+
+Now reading the stylesheets so I reuse existing classes rather than inventing new visuals.
+
+● Read prototype.css                                                                              5s
+  │ prototype\prototype.css
+  └ 291 lines read
+
+● Read screens.css                                                                                5s
+  │ assets\screens.css
+  └ 475 lines read
+
+Now I'll copy the prototype and set up a plan.
+
+● Todo added 7 items
+  │ Copying prototype to prototype-v2
+  │ Adding joint account option and second applicant fields
+  │ Adding second applicant rows to review
+  │ Updating version reference to v1.1
+  │ Implementing REQ-009 / BR-06 logic in app.js
+  │ Verifying screen 2 fits 390x844 with joint fields visible
+  └ Verifying end-to-end in a real browser
+
+● Copy prototype to prototype-v2 (shell)
+  │ Copy-Item -Path "prototype" -Destination "prototype-v2" -Recurse -Force; Get-ChildItem
+  │ prototype-v2 | Select-Object Name, Length
+  └ 6 lines…
+
+Now updating `prototype-v2/index.html` — version header, joint account option, second-applicant fields, review rows, and traceability attributes.
+
+● Edit index.html +1 -1
+  └ prototype-v2\index.html
+
+● Edit index.html +22 -1
+  └ prototype-v2\index.html
+
+● Edit index.html +1 -1
+  └ prototype-v2\index.html
+
+● Edit index.html +3
+  └ prototype-v2\index.html
+
+● Edit index.html +1 -1
+  └ prototype-v2\index.html
+
+● Edit index.html +1 -1
+  └ prototype-v2\index.html
+
+Now the CSS additions and the app.js logic.
+
+● Edit prototype.css +30
+  └ prototype-v2\prototype.css
+
+● Edit app.js +5 -1
+  └ prototype-v2\app.js
+
+● Edit app.js +5
+  └ prototype-v2\app.js
+
+● Edit app.js +4 -1
+  └ prototype-v2\app.js
+
+● Edit app.js +28 -1
+  └ prototype-v2\app.js
+
+● Edit app.js +14 -2
+  └ prototype-v2\app.js
+
+● Edit app.js +5
+  └ prototype-v2\app.js
+
+● Edit app.js +9 -1
+  └ prototype-v2\app.js
+
+● Edit app.js +2 -1
+  └ prototype-v2\app.js
+
+● Edit app.js +4
+  └ prototype-v2\app.js
+
+● Edit app.js +4
+  └ prototype-v2\app.js
+
+Now let me verify in a real browser. Checking tooling first.
+
+● Check Playwright availability and existing screenshot script (shell)
+  │ python -c "import playwright, sys; print('playwright ok', sys.version)" 2>&1; Get-Content
+  │ .shots\v11.py -ErrorAction SilentlyContinue
+  └ 11 lines…
+
+● Create verify.py +188
+  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\verify.py
+
+● Run browser verification of prototype-v2 (shell)                                               15s
+  │ python "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\
+  │ verify.py" 2>&1
+  └ 77 lines…
+
+Screen 2 overflows by 68px once the joint pair appears. Fixing with a scoped scroll on the field stack (only while the joint group is shown), so every component keeps its handed-over size.
+
+● Edit prototype.css +13
+  └ prototype-v2\prototype.css
+
+● Edit app.js +1
+  └ prototype-v2\app.js
+
+● Edit app.js +7 -1
+  └ prototype-v2\app.js
+
+● Edit app.js +4
+  └ prototype-v2\app.js
+
+● Edit app.js +1
+  └ prototype-v2\app.js
+
+● Edit verify.py +14 -3
+  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\verify.py
+
+● Edit verify.py +10 -4
+  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\verify.py
+
+● Re-run browser verification (shell)                                                            15s
+  │ python "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\
+  │ verify.py" 2>&1
+  └ 80 lines…
+
+All checks pass. Let me visually inspect the screenshots.
+
+● Read v2-screen2-joint.png
+  │ .shots\v2-screen2-joint.png
+  └ 1 line read
+
+  [Image: Image file at path
+  C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.shots\v2-screen2-joint.png
+  [image/png] 1440x1000]
+
+● Read v2-screen3-joint.png
+  │ .shots\v2-screen3-joint.png
+  └ 1 line read
+
+  [Image: Image file at path
+  C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.shots\v2-screen3-joint.png
+  [image/png] 1440x1000]
+
+Let me look at the unscrolled joint state to judge how the scroll reads.
+
+● Create shots.py +19
+  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\shots.py
+
+● Capture joint screen top and bottom scroll states (shell)
+  │ python "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\
+  │ shots.py" 2>&1
+  └ 2 lines…
+
+● Read v2-joint-top.png
+  │ .shots\v2-joint-top.png
+  └ 1 line read
+
+  [Image: Image file at path
+  C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.shots\v2-joint-top.png
+  [image/png] 330x713]
+
+● Read v2-joint-bottom.png
+  │ .shots\v2-joint-bottom.png
+  └ 1 line read
+
+  [Image: Image file at path
+  C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.shots\v2-joint-bottom.png
+  [image/png] 330x713]
+
+The scroll works but lacks a "more below" cue. Adding an edge fade tied to scroll position.
+
+● Edit prototype.css +18 -3
+  └ prototype-v2\prototype.css
+
+● Edit app.js +12
+  └ prototype-v2\app.js
+
+● Read app.js
+  │ prototype-v2\app.js
+  └ L152:235 (84 lines read)
+
+● Edit app.js +1
+  └ prototype-v2\app.js
+
+● Edit app.js +1
+  └ prototype-v2\app.js
+
+● Recapture joint scroll states with fade (shell)
+  │ python "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\
+  │ shots.py" 2>&1
+  └ 2 lines…
+
+● Read v2-joint-top.png
+  │ .shots\v2-joint-top.png
+  └ 1 line read
+
+  [Image: Image file at path
+  C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.shots\v2-joint-top.png
+  [image/png] 330x713]
+
+● Read v2-joint-bottom.png
+  │ .shots\v2-joint-bottom.png
+  └ 1 line read
+
+  [Image: Image file at path
+  C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.shots\v2-joint-bottom.png
+  [image/png] 330x713]
+
+The fade is too subtle on its own. Better: selecting "Joint" should reveal the new fields directly.
+
+● Edit app.js -2
+  └ prototype-v2\app.js
+
+● Edit app.js +20 -1
+  └ prototype-v2\app.js
+
+● Edit app.js +4
+  └ prototype-v2\app.js
+
+● Edit shots.py +4 -1
+  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\shots.py
+
+● Capture reveal-on-select state (shell)                                                          5s
+  │ python "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\
+  │ shots.py" 2>&1
+  └ 2 lines…
+
+● Read v2-joint-top.png
+  │ .shots\v2-joint-top.png
+  └ 1 line read
+
+  [Image: Image file at path
+  C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.shots\v2-joint-top.png
+  [image/png] 330x713]
+
+● Read v2-joint-reveal.png
+  │ .shots\v2-joint-reveal.png
+  └ 1 line read
+
+  [Image: Image file at path
+  C:\Users\xaviermorris\ghcp-demos\ghcp-demo-00-design-to-clickthrough\.shots\v2-joint-reveal.png
+  [image/png] 330x713]
+
+● Edit verify.py +7 -1
+  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\verify.py
+
+● Edit verify.py +13 -1
+  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\verify.py
+
+● Full re-verification in browser (shell)                                                        15s
+  │ python "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\
+  │ verify.py" 2>&1
+  └ 84 lines…
+
+The one failure is my test's assumption, not the code — in that case all fields are empty so `name` is the first failure (correctly scrolled to top). Fixing the assertions.
+
+● Edit verify.py +6
+  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\verify.py
+
+● Edit verify.py +2 -2
+  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\verify.py
+
+● Re-run verification with corrected assertions (shell)                                          14s
+  │ python "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\
+  │ verify.py" 2>&1 | Select-Object -Last 30
+  └ 31 lines…
+
+All checks pass. Now verifying originals are untouched and checking cross-browser + docs.
+
+/ Search (grep)
+  │ "prototype" (README.md, RUN-SHEET.md)
+  └ 35 lines found
+
+● Confirm originals untouched (shell)
+  │ git --no-pager status --porcelain; Write-Output "---- diff of tracked files ----"; git
+  │ --no-pager diff --stat
+  └ 18 lines…
+
+Git shows `prototype/` as modified — I need to confirm that predates my work.
+
+● Inspect prototype diff and file timestamps (shell)
+  │ git --no-pager diff --stat --ignore-all-space -- prototype/; Write-Output "---- first hunk
+  │ ----"; git --no-pager diff -- prototype/app.js | Select-Object -First 25; Write-Output "----
+  │ mtimes ----"; Get-ChildItem prototype, prototype-v2 -File | Select-Object FullName,
+  │ LastWriteTime
+  └ 41 lines…
+
+`prototype/` was already modified before my session started (mtimes 9:01–9:12 PM vs. session start 9:15 PM) — I didn't touch it. Now a cross-browser pass.
+
+● Create crossbrowser.py +67
+  └ ~\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\crossbrowser.py
+
+● Run journey in Chromium, Firefox and WebKit (shell)                                             6s
+  │ python "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84b4cb8\files\
+  │ crossbrowser.py" 2>&1
+  └ 21 lines…
+
+Only bundled Chromium is installed. Let me verify against a genuinely installed system browser (Edge).
+
+● Run journey in installed Edge and Chrome (shell)                                                7s
+  │ $s = Get-Content "C:\Users\xaviermorris\.copilot\session-state\aa1374c9-dbef-4c49-aeec-c52cf84
+  │ b4cb8\files\crossbrowser.py" -Raw
+  │ $s = $s.Replace('    journey("firefox", pw.firefox)`n', '')
+  │ $s = $s -replace '(?m)^    journey\("firefox".*\r?\n', ''
+  │ $s = $s -replace '(?m)^    journey\("webkit".*\r?\n', ''…
+  └ 28 lines…
+
+Verified in the installed Microsoft Edge from `file://`. Final review of the complete change set:
+
+● Diff prototype vs prototype-v2 (shell)
+  │ git --no-pager diff --no-index -- prototype prototype-v2 2>&1 | Select-Object -First 400
+  └ 401 lines…
+
+● Read prototype.css
+  │ prototype-v2\prototype.css
+  └ L190:225 (35 lines read)
+
+● Read .gitignore
+  └ 10 lines read
+
+Cleaning up scratch artefacts and closing out.
+
+✔ Todo completed
+
+● Remove scratch screenshots and confirm assets/BRD untouched (shell)
+  │ Remove-Item ".shots\v2-*.png" -Force -ErrorAction SilentlyContinue; Get-ChildItem .shots |
+  │ Select-Object Name; Write-Output "---- assets untouched ----"; git --no-pager status --porcelain
+  │ -- assets/ brd/ prototype/index.html; Write-Output "(no output above for assets = unmodified)"
+  └ 14 lines…
+
+● Confirm BRD and assets timestamps predate session (shell)
+  │ Get-ChildItem brd, assets -File | Select-Object Name, LastWriteTime | Format-Table -AutoSize |
+  │ Out-String -Width 120
+  └ 6 lines…
+
+Done. Both BRDs (9:14 PM and earlier), `assets/screens.css`, and `prototype/` all predate this session at 9:15 PM — untouched.
+
+**What changed between v1.0 → v1.1**
+- **REQ-009 (Must)** — account list must also offer a *Joint Everyday Account*; when chosen, capture the second applicant's name + email and show both on review; no second-applicant details for any other type.
+- **BR-06** — second applicant's name and email mandatory, validated to the same standard as BR-01/BR-02.
+- Scope line: "single **or joint** applicant"; version/date block and revision banner.
+
+**What I built in `prototype-v2/`**
+- Header now reads `BRD-2026-014 v1.1`.
+- Screen 2: 4th select option; a conditional *Second applicant* group (name + email) that appears only for the joint type. Selecting it smoothly scrolls the new fields into view; the stack scrolls (with soft edge fades) **only** in the joint case, so every other screen keeps its exact handed-over layout and field sizes.
+- BR-06 validation mirrors BR-01/BR-02 with second-applicant wording, applied only when joint; switching away retires the fields and their messages.
+- Screen 3: two conditional review rows, placed so "Account" stays the last visible row.
+- `data-req` updated — screen 2: `+REQ-009, +BR-06`; screen 3: `+REQ-009`; `data-rule` added to the new elements. `app.js` traceability header updated.
+- No framework, build step, or CDN; `assets/screens.css` untouched and still shared.
+
+**Verification** (real browsers, `file://`): 45 automated checks pass in bundled Chromium and in installed Microsoft Edge — both journeys end-to-end, validation gating, review playback, REQ-008 data retention, BR-04 gating, trace chips, no clipping at 390×844 or in a 900×720 window, zero console errors.
+
+
+
+Changes    +551 -31
+AI Credits 538 (16m 22s)
+Tokens     ↑ 6.1m (5.9m cached, 138.7k written) • ↓ 60.2k (28.8k reasoning)
+Resume     copilot --resume=aa1374c9-dbef-4c49-aeec-c52cf84b4cb8
+
+=== ELAPSED: 16:31 ===

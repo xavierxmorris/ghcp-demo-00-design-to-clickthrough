@@ -1,214 +1,349 @@
 /* ============================================================================
-   Click-through prototype shell.
-   Everything the design file could not do: routing, state, validation, memory.
+   Aurora — click-through prototype
+   Page chrome ONLY. Every pixel inside the phone comes from
+   ../assets/screens.css, which is used exactly as handed over and is not
+   modified or overridden here. This file adds: the stage the phone sits on,
+   screen switching, validation states, and the BRD traceability strip.
+   No build step, no CDN, no framework. Runs from file://.
    ========================================================================= */
 
-html, body { height: 100%; }
+:root {
+  --fit: 1;                       /* set by app.js so the 390x844 frame always fits */
+  --stage-ink: #e8ecf9;
+  --stage-dim: #98a3c4;
+}
+
+html { height: 100%; }
 
 body {
   margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(1100px 640px at 50% -12%, rgba(110, 86, 248, .34), transparent 62%),
+    radial-gradient(900px 560px at 88% 10%, rgba(47, 182, 255, .20), transparent 60%),
+    radial-gradient(820px 520px at 6% 92%, rgba(67, 229, 196, .16), transparent 62%),
+    #070a16;
+  background-attachment: fixed;
+  color: var(--stage-ink);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+}
+
+.stage {
+  min-height: 100vh;
+  padding: 26px 24px 34px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 20px;
-  padding: 26px 20px;
-  background:
-    radial-gradient(760px 520px at 18% 8%,  rgba(110, 86, 248, .30), transparent 62%),
-    radial-gradient(700px 520px at 84% 92%, rgba(67, 229, 196, .22), transparent 60%),
-    radial-gradient(620px 460px at 88% 12%, rgba(47, 182, 255, .20), transparent 58%),
-    #070a14;
-  color: #eef2f9;
-  font-family: var(--font-display);
-  -webkit-font-smoothing: antialiased;
 }
 
 /* --------------------------------------------------------------- header -- */
 
-.stage-head {
-  flex: 0 0 auto;
-  text-align: center;
-  max-width: 640px;
+.stage-head { text-align: center; }
+.stage-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.2px;
+}
+.stage-sub {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--stage-dim);
 }
 .stage-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
+  display: inline-block;
+  margin-top: 9px;
+  padding: 4px 11px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, .14);
-  background: rgba(255, 255, 255, .06);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: .3px;
-}
-.stage-badge .live {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: #43e5c4;
-  box-shadow: 0 0 0 3px rgba(67, 229, 196, .22);
-  animation: pulse 2s ease-in-out infinite;
-}
-@keyframes pulse { 50% { opacity: .35; } }
-
-.stage-head h1 {
-  margin: 12px 0 0;
-  font-size: 25px;
-  line-height: 1.2;
-  letter-spacing: -.7px;
+  border: 1px solid rgba(67, 229, 196, .34);
+  background: rgba(67, 229, 196, .10);
+  color: var(--mint-400);
+  font-size: 11px;
   font-weight: 700;
-}
-.stage-head p {
-  margin: 7px 0 0;
-  font-size: 14px;
-  line-height: 1.5;
-  color: rgba(238, 242, 249, .62);
+  letter-spacing: .5px;
 }
 
 /* --------------------------------------------------------------- device -- */
 
-.device {
+/* The wrapper reserves the scaled footprint so nothing jumps when --fit changes. */
+.device-wrap {
   flex: 0 0 auto;
-  padding: 11px;
-  border-radius: 38px;
-  background: linear-gradient(160deg, #23283a, #0b1020);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, .09),
-    0 34px 80px rgba(0, 0, 0, .6);
+  width: calc(var(--frame-w) * var(--fit));
+  height: calc(var(--frame-h) * var(--fit));
 }
-.device .frame { border-radius: var(--radius-lg); }
+.device {
+  position: relative;
+  width: var(--frame-w);
+  height: var(--frame-h);
+  border-radius: 46px;
+  overflow: hidden;
+  background: var(--surface);
+  transform: scale(var(--fit));
+  transform-origin: top left;
+  box-shadow:
+    0 0 0 11px #0b0f20,
+    0 0 0 12px rgba(255, 255, 255, .12),
+    0 30px 70px -16px rgba(4, 7, 18, .8);
+}
 
-/* --------------------------------------------------------------- router -- */
+/* ------------------------------------------------------- screen swapping -- */
 
-.screen { display: none; }
-.screen.is-active {
-  display: flex;
-  flex-direction: column;
+.screen[hidden] { display: none; }      /* beats .frame's display:flex */
+.screen.is-active { animation: screen-in .30s cubic-bezier(.4, 0, .2, 1) both; }
+@keyframes screen-in {
+  from { opacity: 0; transform: translateY(9px); }
+  to   { opacity: 1; transform: none; }
+}
+[data-focus]:focus { outline: none; }
+
+/* Keyboard focus that is visible but never fights the design system. */
+.frame :is(button, input, select):focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+}
+
+/* The form owns the remaining frame height so .frame-actions still pins low. */
+.form-flow {
   flex: 1 1 auto;
   min-height: 0;
-  animation: screen-in .34s cubic-bezier(.22, .8, .3, 1) both;
-}
-@keyframes screen-in {
-  from { opacity: 0; transform: translateX(14px); }
-  to   { opacity: 1; transform: none; }
-}
-.screen.is-back { animation-name: screen-in-back; }
-@keyframes screen-in-back {
-  from { opacity: 0; transform: translateX(-14px); }
-  to   { opacity: 1; transform: none; }
+  display: flex;
+  flex-direction: column;
 }
 
-/* Interactive affordances the static frames never had. */
-.btn { transition: transform .12s ease, box-shadow .2s ease, filter .2s ease; }
-.btn:hover  { filter: brightness(1.05); }
-.btn:active { transform: scale(.978); }
-.btn:disabled { opacity: .45; cursor: not-allowed; filter: none; transform: none; }
-.nav-back { cursor: pointer; transition: background .15s ease; }
-.nav-back:hover { background: var(--surface-sunken); }
+/* ---------------------------------------------- validation — REQ-004 ----- */
 
-.field input:focus,
-.field select:focus {
-  outline: none;
-  border-color: var(--brand-500);
-  background: #fff;
-  box-shadow: 0 0 0 4px rgba(110, 86, 248, .16);
-}
-
-/* ------------------------------------------------------------ validation -- */
-
-.field.has-error input,
-.field.has-error select { border-color: var(--danger); background: rgba(216, 48, 90, .05); }
 .field-error {
-  display: none;
+  margin: 0;
   font-size: 12px;
+  line-height: 1.35;
   font-weight: 600;
   color: var(--danger);
 }
-.field.has-error .field-error { display: block; }
+.field-error::before {
+  content: "!";
+  display: inline-grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  vertical-align: -2px;
+}
+.field-error-block { margin-top: 8px; }
 
-.consent.has-error { border-color: var(--danger); }
+.field.is-invalid input,
+.field.is-invalid select {
+  border-color: var(--danger);
+  background: rgba(216, 48, 90, .05);
+}
+.field.is-invalid label { color: var(--danger); }
+.field.is-invalid input:focus-visible,
+.field.is-invalid select:focus-visible { outline-color: var(--danger); }
+.consent.is-invalid { border-color: var(--danger); }
 
-/* --------------------------------------------------- conditional fields -- */
-
-/* `.field` and `.summary .item` set an explicit `display`, which outranks the
-   user-agent rule for [hidden]. Restore it so the attribute alone can hide. */
-[hidden] { display: none !important; }
-
-/* Revealed when the account type is a joint account. */
-.joint-field { animation: field-in .28s cubic-bezier(.22, .8, .3, 1) both; }
-@keyframes field-in {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: none; }
+.is-shake { animation: shake .32s cubic-bezier(.36, .07, .19, .97) both; }
+@keyframes shake {
+  10%, 90% { transform: translateX(-1.5px); }
+  20%, 80% { transform: translateX(3px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
 }
 
-/* Two extra fields can outgrow the fixed phone frame once error messages are
-   showing. Tighten the stack a little in joint mode only — the single-applicant
-   layout keeps its original spacing — and scroll rather than clip if it still
-   runs long. No visible scrollbar, the same as a real mobile browser. */
-.field-stack {
+/* --------------------------------- second applicant — REQ-009 / BR-06 ---- */
+
+/* Revealed only while a joint account is selected. It sits inside
+   .field-stack and reuses that grid's rhythm and the design system's own
+   field styling, so the screen keeps the spacing it was handed over with. */
+.joint-group { display: grid; gap: 14px; }
+.joint-group[hidden] { display: none; }     /* beats the grid above */
+
+/* Two more fields do not fit the handed-over 844px frame, so while the second
+   applicant is on screen the stack scrolls — the way a real mobile form does.
+   Scrollbars stay hidden, as they are on a phone; the soft edge below shows
+   there is more. Applied only in the joint case, so every other screen keeps
+   exactly the layout it was handed over with. */
+.field-stack.is-scrollable {
   overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
-.field-stack::-webkit-scrollbar { width: 0; height: 0; }
-.field-stack.is-joint { gap: 11px; }
+.field-stack.is-scrollable::-webkit-scrollbar { width: 0; height: 0; }
 
-/* ---------------------------------------------------------------- toast -- */
+.field-stack.has-below:not(.has-above) {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 34px), transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 calc(100% - 34px), transparent 100%);
+}
+.field-stack.has-above:not(.has-below) {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 26px);
+          mask-image: linear-gradient(to bottom, transparent 0, #000 26px);
+}
+.field-stack.has-above.has-below {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 26px,
+                                      #000 calc(100% - 34px), transparent 100%);
+          mask-image: linear-gradient(to bottom, transparent 0, #000 26px,
+                                      #000 calc(100% - 34px), transparent 100%);
+}
+
+.group-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: var(--brand-500);
+}
+.group-label::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: var(--hairline);
+}
+
+/* REQ-009 — the review rows for the second applicant are dropped entirely
+   when the account is not joint, so "Account" stays the last visible row. */
+.summary .item[hidden] { display: none; }   /* beats .summary .item's flex */
+
+/* ------------------------------------------------- small print — BR-05 --- */
+
+.legal {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.35;
+  text-align: center;
+  color: var(--ink-400);
+}
+
+/* ----------------------------------------------------------------- toast -- */
 
 .toast {
-  position: fixed;
-  left: 50%;
-  bottom: 26px;
-  transform: translate(-50%, 20px);
-  padding: 11px 18px;
-  border-radius: 999px;
-  background: #0b1020;
-  border: 1px solid rgba(255, 255, 255, .16);
+  position: absolute;
+  left: 26px;
+  right: 26px;
+  bottom: 200px;                 /* clear of the pinned actions below */
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--ink-900);
   color: #fff;
   font-size: 13px;
   font-weight: 600;
-  opacity: 0;
+  text-align: center;
   pointer-events: none;
-  transition: opacity .22s ease, transform .22s ease;
-  z-index: 20;
+  box-shadow: 0 10px 26px rgba(11, 16, 32, .35);
+  animation: toast-in .26s ease both;
 }
-.toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+.toast[hidden] { display: none; }
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
 
-/* --------------------------------------------------------------- footer -- */
+/* --------------------------------------------- traceability — the BRD ---- */
 
-.stage-foot {
-  flex: 0 0 auto;
+.trace {
+  width: min(560px, 100%);
+  text-align: center;
+  font-size: 12px;
+  color: var(--stage-dim);
+}
+.trace-line { letter-spacing: .2px; }
+.trace-line b { color: var(--stage-ink); }
+.trace-name::before { content: "·"; margin: 0 6px; opacity: .6; }
+
+.trace-refs {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  font-size: 13px;
-  color: rgba(238, 242, 249, .55);
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 9px;
 }
-.stage-foot button {
-  padding: 8px 15px;
-  border-radius: 9px;
-  border: 1px solid rgba(255, 255, 255, .16);
-  background: rgba(255, 255, 255, .06);
-  color: inherit;
-  font: inherit;
-  font-weight: 600;
+.trace-refs .ref {
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(169, 155, 255, .32);
+  background: rgba(110, 86, 248, .16);
+  color: #cdc4ff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  font-variant-numeric: tabular-nums;
+}
+.trace-refs .ref.is-rule {
+  border-color: rgba(47, 182, 255, .32);
+  background: rgba(47, 182, 255, .14);
+  color: #a9dcff;
+}
+
+.trace-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 11px;
+  font-size: 11.5px;
+  color: var(--stage-dim);
   cursor: pointer;
 }
-.stage-foot button:hover { background: rgba(255, 255, 255, .12); }
+.trace-toggle input {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--brand-500);
+}
 
-/* Short laptop screens: shrink the phone rather than clip it. `transform` does
-   not change layout size, so each step also pulls back the leftover box. */
-@media (max-height: 1100px) {
-  body { gap: 14px; padding: 14px; }
-  .stage-head h1 { font-size: 21px; }
-  .stage-head p { display: none; }
-  .device { transform: scale(.86); transform-origin: center; margin: -61px 0; }
+/* Opt-in overlay: label the elements that carry a BRD reference. */
+body.trace-on [data-rule] {
+  position: relative;
+  outline: 1px dashed rgba(110, 86, 248, .55);
+  outline-offset: 3px;
 }
-@media (max-height: 900px) {
-  .device { transform: scale(.74); margin: -113px 0; }
+body.trace-on [data-rule]::after {
+  content: attr(data-rule);
+  position: absolute;
+  top: -8px;
+  right: 0;
+  z-index: 2;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--brand-500);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  line-height: 1.5;
+  pointer-events: none;
 }
-@media (max-height: 780px) {
-  .stage-head h1 { display: none; }
-  .device { transform: scale(.62); margin: -165px 0; }
+body.trace-on .field-error[hidden] { display: none; }
+
+/* ----------------------------------------------------------------- misc -- */
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .screen.is-active,
+  .is-shake,
+  .toast { animation: none; }
+  .progress span { transition: none; }
+}
+
+/* Pre-JS fallbacks so the frame is never clipped before app.js sets --fit. */
+@media (max-height: 1020px) { :root { --fit: .88; } }
+@media (max-height: 900px)  { :root { --fit: .78; } }
+@media (max-height: 800px)  { :root { --fit: .68; } }
