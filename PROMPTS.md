@@ -92,15 +92,22 @@ screen and reworked the layout rather than shipping something clipped.
 
 ## Adapt it to your own BRD
 
-Copy this and fill in the four bracketed bits. Everything else is load-bearing —
-keep it.
+**This template is battle-tested.** It was run repeatedly against
+[BRD v1.1](./brd/terravale-field-hazard-report-brd-v1.1.html) from a clean folder
+containing nothing but the BRD and a stylesheet — see
+[Battle test](#battle-test-what-happens-when-you-actually-run-this) below for what
+survived and what had to be fixed.
+
+Copy this and fill in the five bracketed bits. Everything else is load-bearing —
+keep it, especially the last four lines.
 
 ```text
 Read the business requirements document at [PATH TO YOUR BRD].
 Build a working click-through prototype that satisfies every requirement and every
-business rule in it. Put it in a new folder called prototype, as index.html plus
-prototype.css plus app.js. It must run straight from the filesystem by double-clicking
-index.html, with no server, no framework, no library, no build step and no CDN.
+business rule in it. Put it in a new folder called [OUTPUT FOLDER NAME], as index.html
+plus prototype.css plus app.js. It must run straight from the filesystem by
+double-clicking index.html, with no server, no framework, no library, no build step
+and no CDN.
 Use the existing design system at [PATH TO YOUR STYLESHEET OR TOKENS] exactly as it is
 - link to it, reuse its existing classes and variables, and do not modify that file.
 Present the journey inside a [390x844 phone frame / desktop layout] centred on the page.
@@ -108,11 +115,105 @@ Present the journey inside a [390x844 phone frame / desktop layout] centred on t
 On every screen section add a data-req attribute listing the requirement references
 that screen satisfies, and show a small trace strip that reads the current screen's
 data-req live, plus a toggle that labels those references on the screen itself.
-Verify your work in a real browser before you finish.
+Do not modify any file or folder outside [OUTPUT FOLDER NAME], and remove any scratch
+folders you create.
+Verify your work in a real browser before you finish: walk the whole journey, check
+every requirement and rule, and confirm nothing is clipped or unreachable at the
+target screen size.
+Stop once the journey works end to end and nothing is clipped - do not keep polishing.
+Finish by listing which requirement each screen satisfies, and anything you had to
+decide that the document did not specify.
 ```
 
 No design system to point at? Drop that sentence and add: *"Pick a clean, modern
 visual style and apply it consistently across every screen."*
+
+### The five lines people delete, and shouldn't
+
+| Line | What goes wrong without it |
+|---|---|
+| *"…called [OUTPUT FOLDER NAME]"* | Hardcoding `prototype` silently overwrites the version your stakeholders already signed off. Name it per attempt: `prototype-v3`, `prototype-tues`. |
+| *"Do not modify any file or folder outside…"* | Without it, a run may read and drift toward whatever else is lying around, and can leave `node_modules` in your repo. |
+| *"…and remove any scratch folders you create"* | Verification often installs a browser driver. Say this or you'll be committing it. |
+| *"Stop once the journey works end to end… do not keep polishing"* | **The single biggest cost control.** Unbounded, a run kept chasing sub-pixel hit-area issues long past useful. Bounded runs finished in ~25 minutes. |
+| *"…anything you had to decide that the document did not specify"* | It **will** fill gaps your BRD left. You want that list — it's your next set of requirements. |
+
+---
+
+## Battle test: what happens when you actually run this
+
+The template above was run **four more times from scratch**, each in a separate clean
+folder containing *only* BRD v1.1 and `assets/screens.css` — no example
+implementation to copy from — plus two earlier runs of the unbounded version.
+
+### Result: 4 / 4 produced a complete, working, self-verified app
+
+| Run | Time | Its own browser checks |
+|---|---|---|
+| 1 | 24 min 08 s | 84 / 84 pass |
+| 2 | 30 min 44 s | 101 / 101 pass |
+| 3 | 22 min 31 s | 79 / 79 pass |
+| 4 | 22 min 08 s | 82 / 82 pass |
+
+Every run wrote its *own* test suite, drove a real browser, found its own defects and
+fixed them before finishing. None needed a correction from a human. All four
+transcripts, and the exact prompt used, are committed in
+[`iteration/battle-test/`](./iteration/battle-test).
+
+**The "stop once it works" line is what makes this predictable.** Without it, an
+earlier run was still polishing sub-pixel hit areas after **90 minutes**. With it,
+all four landed between 22 and 31 minutes.
+
+**The "list what you decided" line works.** Run 3 finished with, unprompted:
+
+> *"**Step split.** Capture is 4 steps (5 with High potential); the BRD gives fields,
+> not screen boundaries… **Date entry.** BR-03's 'DD / MM / YYYY' implemented as three
+> digit boxes…"*
+
+That is a requirements conversation you would otherwise have had six weeks later.
+
+### What was identical every time
+
+- Every requirement and business rule implemented and traceable to a screen
+- Runs from `file://` — no server, framework, build step or CDN
+- Reused the design system untouched, and left no scratch folders behind
+- Refused invalid input with a specific, rule-referenced message
+- Review screen replayed exactly what was typed
+- Escalation appeared only for the high-risk rating, and validated
+- A live trace strip plus an on-screen reference toggle
+
+### What varied — expect this
+
+| | Examples across the six runs |
+|---|---|
+| Journey shape | 4, 5 and 6 screens; "Step N of 4" vs "Screen N of 5" |
+| Date entry | one masked field, or three separate DD / MM / YYYY boxes |
+| Hazard category | dropdown, or large tap-target option cards |
+| Refs toggle | checkbox, or a `button` with `aria-pressed` |
+| Frame size | literal `390`/`844`, or `var(--frame-w)` from the design system |
+
+None of those are wrong. **If a specific shape matters, put it in the BRD** — not the
+prompt. That is the whole point of the method.
+
+### It fills gaps in your document, sensibly
+
+One run added a rule the BRD never stated: **"Date observed cannot be in the future."**
+BR-03 only specified the format. For a *hazard observation* date that inference is
+obviously right — and it's exactly what a BA wants surfaced rather than buried.
+
+Another read *"reports can be raised without mobile signal"* in REQ-001 and put a
+`NO SIGNAL` indicator in the phone status bar.
+
+### The honest caveats
+
+- **Run it in a folder with the BRD and your design system, and little else.** A run
+  inside a repo full of prior implementations drifts toward copying them rather than
+  reading the document — we watched it happen.
+- **Budget 20–30 minutes.** Most of that is it testing and fixing its own work.
+- **Markup is not stable between runs.** Element IDs, control types and screen counts
+  all change. Don't write automated tests against one run's markup and expect them to
+  pass against the next — we tried, and a single generic test driver could not walk
+  all four builds. Test the *journey*, not the selectors.
 
 ---
 
