@@ -119,8 +119,15 @@ function Wait-Beat {
     if ($Manual) {
         Write-Host ''
         Write-Host '        [Enter] to continue ' -ForegroundColor DarkGray -NoNewline
-        [void](Read-Host)
-        return
+        try {
+            [void](Read-Host)
+            return
+        } catch {
+            # Redirected or non-interactive host (CI, piped output): fall through
+            # to the timer rather than dying mid-demo.
+            Write-Host ''
+            Write-Note 'Non-interactive host - using the timer instead.'
+        }
     }
 
     for ($i = $Seconds; $i -gt 0; $i--) {
