@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aurora — Everyday Account · Click-through prototype</title>
+<meta name="description" content="A working click-through prototype generated from the Aurora design frames.">
+<link rel="stylesheet" href="../assets/screens.css">
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<header class="stage-head">
+  <span class="stage-badge"><span class="live" aria-hidden="true"></span> Click-through prototype</span>
+  <h1>Same four screens &mdash; now you can actually use them.</h1>
+  <p>Type your own details. The review screen remembers what you entered, because this is running code, not a picture.</p>
+</header>
+
+<div class="device">
+  <main class="frame">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span class="dots" aria-hidden="true"><i></i><i></i><i></i><span class="battery"></span></span>
+    </div>
+
+    <!-- ================================================ 01 Welcome ======== -->
+    <section class="frame-body screen is-active" data-screen="welcome" aria-label="Welcome">
+      <div class="brandmark"><span class="glyph"></span> Aurora</div>
+      <p class="eyebrow" style="margin-top:22px">Everyday Account</p>
+      <h1 class="display">Banking that <span class="grad">moves</span> with you.</h1>
+
+      <div class="hero-art">
+        <span class="orb orb-a" aria-hidden="true"></span>
+        <span class="orb orb-b" aria-hidden="true"></span>
+        <span class="orb orb-c" aria-hidden="true"></span>
+        <div class="hero-card">
+          <div class="row">
+            <span class="label">Everyday</span>
+            <span class="label">+2.4%</span>
+          </div>
+          <div class="row" style="margin-top:2px">
+            <span class="amount">$4,820.60</span>
+          </div>
+          <div class="bar"></div>
+        </div>
+      </div>
+
+      <ul class="value-list">
+        <li><span class="tick">&#10003;</span> No monthly account fee</li>
+        <li><span class="tick">&#10003;</span> Open in under 5 minutes</li>
+        <li><span class="tick">&#10003;</span> Instant digital card</li>
+      </ul>
+
+      <div class="frame-actions">
+        <button class="btn btn-primary" data-go="details">Get started</button>
+      </div>
+    </section>
+
+    <!-- ================================================ 02 Details ======== -->
+    <section class="frame-body screen" data-screen="details" aria-label="Your details">
+      <div class="frame-nav">
+        <button class="nav-back" data-back="welcome" aria-label="Back">&#8249;</button>
+        <span class="progress"><span style="width:50%"></span></span>
+        <span class="step-count">2 / 4</span>
+      </div>
+
+      <h2 class="h2">Your details</h2>
+      <p class="meta">We only ask for what we legally need.</p>
+
+      <form class="field-stack" id="details-form" novalidate>
+        <div class="field">
+          <label for="f-name">Full name</label>
+          <input id="f-name" name="name" type="text" placeholder="Jordan Blake" autocomplete="name">
+          <span class="field-error">Please enter your full name.</span>
+        </div>
+        <div class="field">
+          <label for="f-email">Email</label>
+          <input id="f-email" name="email" type="email" placeholder="jordan@example.com" autocomplete="email">
+          <span class="field-error">Please enter a valid email address.</span>
+        </div>
+        <div class="field">
+          <label for="f-dob">Date of birth</label>
+          <input id="f-dob" name="dob" type="text" placeholder="DD / MM / YYYY" inputmode="numeric">
+          <span class="field-error">Use DD / MM / YYYY.</span>
+        </div>
+        <div class="field">
+          <label for="f-type">Account type</label>
+          <select id="f-type" name="accountType">
+            <option>Everyday Account</option>
+            <option>Everyday Account + Savings</option>
+            <option>Student Everyday Account</option>
+          </select>
+        </div>
+      </form>
+
+      <div class="frame-actions">
+        <button class="btn btn-primary" type="submit" form="details-form">Continue</button>
+      </div>
+    </section>
+
+    <!-- ================================================ 03 Review ========= -->
+    <section class="frame-body screen" data-screen="review" aria-label="Review">
+      <div class="frame-nav">
+        <button class="nav-back" data-back="details" aria-label="Back">&#8249;</button>
+        <span class="progress"><span style="width:75%"></span></span>
+        <span class="step-count">3 / 4</span>
+      </div>
+
+      <h2 class="h2">Check and confirm</h2>
+      <p class="meta">Nothing is submitted until you tap confirm.</p>
+
+      <div class="summary">
+        <dl>
+          <div class="item"><dt>Name</dt><dd data-bind="name">&mdash;</dd></div>
+          <div class="item"><dt>Email</dt><dd data-bind="email">&mdash;</dd></div>
+          <div class="item"><dt>Date of birth</dt><dd data-bind="dob">&mdash;</dd></div>
+          <div class="item"><dt>Account</dt><dd data-bind="accountType">&mdash;</dd></div>
+        </dl>
+      </div>
+
+      <label class="consent" id="consent">
+        <input type="checkbox" id="f-consent">
+        <span>I agree to the Product Disclosure Statement and Target Market Determination.</span>
+      </label>
+
+      <div class="frame-actions">
+        <button class="btn btn-primary" id="confirm-btn">Confirm and open</button>
+        <button class="btn btn-ghost" data-back="details">Back</button>
+      </div>
+    </section>
+
+    <!-- ================================================ 04 Confirmation === -->
+    <section class="frame-body screen" data-screen="done" aria-label="Confirmation">
+      <div class="done-body">
+        <div class="seal">&#10003;</div>
+        <p class="eyebrow">Account open</p>
+        <h1 class="display">You&rsquo;re all <span class="grad">set</span>.</h1>
+        <p class="lede" data-bind="welcome">Your digital card is ready to add to your wallet.</p>
+        <div class="account-chip">
+          <div class="label">BSB / Account</div>
+          <div class="value" data-bind="account">032&#8209;114 &middot; 8820 4471</div>
+        </div>
+      </div>
+      <div class="frame-actions">
+        <button class="btn btn-primary" id="wallet-btn">Add card to wallet</button>
+        <button class="btn btn-ghost" data-restart>Start again</button>
+      </div>
+    </section>
+
+    <div class="home-indicator"></div>
+  </main>
+</div>
+
+<footer class="stage-foot">
+  <span>Generated from <strong>4 design frames</strong> &middot; no framework, no build step</span>
+  <button type="button" data-restart>Restart</button>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

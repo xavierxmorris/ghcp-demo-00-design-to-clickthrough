@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aurora — Everyday Account · Design file</title>
+<meta name="description" content="The design file: four static frames handed over from design. Nothing here is clickable.">
+<link rel="stylesheet" href="../assets/screens.css">
+<link rel="stylesheet" href="canvas.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ------------------------------------------------------------ toolbar -->
+  <header class="toolbar">
+    <div class="logo" aria-hidden="true"></div>
+    <div class="tool-group" aria-hidden="true">
+      <span class="tool is-active">&#9655;</span>
+      <span class="tool">&#9633;</span>
+      <span class="tool">&#9711;</span>
+      <span class="tool">T</span>
+    </div>
+    <div class="file-meta">
+      <div class="name">Aurora &mdash; Everyday Account</div>
+      <div class="sub">Design system 2.4 &middot; Edited 2 hours ago</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="avatars" aria-hidden="true"><i>PR</i><i>SK</i><i>MT</i></div>
+    <div class="zoom">58%</div>
+    <div class="share">Share</div>
+  </header>
+
+  <!-- --------------------------------------------------------- left panel -->
+  <aside class="panel panel-left">
+    <h3>Pages</h3>
+    <div class="layer is-selected"><span class="icon">&#9635;</span> Handover &mdash; v3</div>
+    <div class="layer"><span class="icon">&#9635;</span> Explorations</div>
+    <div class="divider"></div>
+    <h3>Layers</h3>
+    <div class="layer is-frame is-selected"><span class="icon">#</span> 01 &middot; Welcome <span class="count">12</span></div>
+    <div class="layer child">Hero / Aurora</div>
+    <div class="layer child">Button / Primary</div>
+    <div class="layer is-frame"><span class="icon">#</span> 02 &middot; Your details <span class="count">18</span></div>
+    <div class="layer is-frame"><span class="icon">#</span> 03 &middot; Review <span class="count">15</span></div>
+    <div class="layer is-frame"><span class="icon">#</span> 04 &middot; Confirmation <span class="count">9</span></div>
+  </aside>
+
+  <!-- -------------------------------------------------------------- canvas -->
+  <main class="canvas">
+    <div class="static-note">
+      <span class="dot" aria-hidden="true"></span>
+      Handover frames &mdash; pictures of an app. Try clicking one.
+      <kbd>read-only</kbd>
+    </div>
+
+    <div class="board">
+
+      <!-- ============================================ 01 Welcome ========== -->
+      <section class="frame-slot is-selected">
+        <p class="frame-label">01 &middot; Welcome</p>
+        <div class="frame-viewport">
+          <div class="frame">
+            <div class="status-bar">
+              <span>9:41</span>
+              <span class="dots" aria-hidden="true"><i></i><i></i><i></i><span class="battery"></span></span>
+            </div>
+            <div class="frame-body">
+              <div class="brandmark"><span class="glyph"></span> Aurora</div>
+              <p class="eyebrow" style="margin-top:22px">Everyday Account</p>
+              <h1 class="display">Banking that <span class="grad">moves</span> with you.</h1>
+
+              <div class="hero-art">
+                <span class="orb orb-a" aria-hidden="true"></span>
+                <span class="orb orb-b" aria-hidden="true"></span>
+                <span class="orb orb-c" aria-hidden="true"></span>
+                <div class="hero-card">
+                  <div class="row">
+                    <span class="label">Everyday</span>
+                    <span class="label">+2.4%</span>
+                  </div>
+                  <div class="row" style="margin-top:2px">
+                    <span class="amount">$4,820.60</span>
+                  </div>
+                  <div class="bar"></div>
+                </div>
+              </div>
+
+              <ul class="value-list">
+                <li><span class="tick">&#10003;</span> No monthly account fee</li>
+                <li><span class="tick">&#10003;</span> Open in under 5 minutes</li>
+                <li><span class="tick">&#10003;</span> Instant digital card</li>
+              </ul>
+
+              <div class="frame-actions">
+                <span class="btn btn-primary">Get started</span>
+              </div>
+            </div>
+            <div class="home-indicator"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================ 02 Details ========== -->
+      <section class="frame-slot">
+        <p class="frame-label">02 &middot; Your details</p>
+        <div class="frame-viewport">
+          <div class="frame">
+            <div class="status-bar">
+              <span>9:41</span>
+              <span class="dots" aria-hidden="true"><i></i><i></i><i></i><span class="battery"></span></span>
+            </div>
+            <div class="frame-body">
+              <div class="frame-nav">
+                <span class="nav-back">&#8249;</span>
+                <span class="progress"><span style="width:50%"></span></span>
+                <span class="step-count">2 / 4</span>
+              </div>
+
+              <h2 class="h2">Your details</h2>
+              <p class="meta">We only ask for what we legally need.</p>
+
+              <div class="field-stack">
+                <div class="field">
+                  <label>Full name</label>
+                  <input type="text" placeholder="Jordan Blake" readonly>
+                </div>
+                <div class="field">
+                  <label>Email</label>
+                  <input type="text" placeholder="jordan@example.com" readonly>
+                </div>
+                <div class="field">
+                  <label>Date of birth</label>
+                  <input type="text" placeholder="DD / MM / YYYY" readonly>
+                </div>
+                <div class="field">
+                  <label>Account type</label>
+                  <select disabled><option>Everyday Account</option></select>
+                </div>
+              </div>
+
+              <div class="frame-actions">
+                <span class="btn btn-primary">Continue</span>
+              </div>
+            </div>
+            <div class="home-indicator"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================ 03 Review =========== -->
+      <section class="frame-slot">
+        <p class="frame-label">03 &middot; Review</p>
+        <div class="frame-viewport">
+          <div class="frame">
+            <div class="status-bar">
+              <span>9:41</span>
+              <span class="dots" aria-hidden="true"><i></i><i></i><i></i><span class="battery"></span></span>
+            </div>
+            <div class="frame-body">
+              <div class="frame-nav">
+                <span class="nav-back">&#8249;</span>
+                <span class="progress"><span style="width:75%"></span></span>
+                <span class="step-count">3 / 4</span>
+              </div>
+
+              <h2 class="h2">Check and confirm</h2>
+              <p class="meta">Nothing is submitted until you tap confirm.</p>
+
+              <div class="summary">
+                <dl>
+                  <div class="item"><dt>Name</dt><dd>Jordan Blake</dd></div>
+                  <div class="item"><dt>Email</dt><dd>jordan@example.com</dd></div>
+                  <div class="item"><dt>Date of birth</dt><dd>14 / 03 / 1991</dd></div>
+                  <div class="item"><dt>Account</dt><dd>Everyday Account</dd></div>
+                </dl>
+              </div>
+
+              <label class="consent">
+                <input type="checkbox" disabled>
+                <span>I agree to the Product Disclosure Statement and Target Market Determination.</span>
+              </label>
+
+              <div class="frame-actions">
+                <span class="btn btn-primary">Confirm and open</span>
+                <span class="btn btn-ghost">Back</span>
+              </div>
+            </div>
+            <div class="home-indicator"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================ 04 Confirmation ===== -->
+      <section class="frame-slot">
+        <p class="frame-label">04 &middot; Confirmation</p>
+        <div class="frame-viewport">
+          <div class="frame">
+            <div class="status-bar">
+              <span>9:41</span>
+              <span class="dots" aria-hidden="true"><i></i><i></i><i></i><span class="battery"></span></span>
+            </div>
+            <div class="frame-body">
+              <div class="done-body">
+                <div class="seal">&#10003;</div>
+                <p class="eyebrow">Account open</p>
+                <h1 class="display">You&rsquo;re all <span class="grad">set</span>.</h1>
+                <p class="lede">Your digital card is ready to add to your wallet.</p>
+                <div class="account-chip">
+                  <div class="label">BSB / Account</div>
+                  <div class="value">032&#8209;114 &middot; 8820 4471</div>
+                </div>
+              </div>
+              <div class="frame-actions">
+                <span class="btn btn-primary">Add card to wallet</span>
+                <span class="btn btn-ghost">Back to home</span>
+              </div>
+            </div>
+            <div class="home-indicator"></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- -------------------------------------------------------- right panel -->
+  <aside class="panel panel-right">
+    <h3>Frame</h3>
+    <div class="prop-row"><span>W</span><b>390</b><span>H</span><b>844</b></div>
+    <div class="prop-row"><span>Layout</span><b>Vertical</b></div>
+    <div class="prop-row"><span>Gap</span><b>14</b></div>
+    <div class="prop-row"><span>Padding</span><b>26</b></div>
+    <div class="divider"></div>
+    <h3>Colour styles</h3>
+    <div class="swatch-row"><span class="swatch" style="background:#6e56f8"></span><span>brand/500</span><b>#6E56F8</b></div>
+    <div class="swatch-row"><span class="swatch" style="background:#2fb6ff"></span><span>cyan/400</span><b>#2FB6FF</b></div>
+    <div class="swatch-row"><span class="swatch" style="background:#43e5c4"></span><span>mint/400</span><b>#43E5C4</b></div>
+    <div class="swatch-row"><span class="swatch" style="background:#0b1020"></span><span>ink/900</span><b>#0B1020</b></div>
+    <div class="divider"></div>
+    <h3>Text styles</h3>
+    <div class="prop-row"><span>Display</span><b>34 / 1.08</b></div>
+    <div class="prop-row"><span>Heading</span><b>22 / 1.16</b></div>
+    <div class="prop-row"><span>Body</span><b>15 / 1.5</b></div>
+    <div class="divider"></div>
+    <h3>Prototype</h3>
+    <div class="prop-row"><span>Interactions</span><b>None</b></div>
+    <div class="prop-row"><span>Flows</span><b>0</b></div>
+  </aside>
+
+</div>
+</body>
+</html>
