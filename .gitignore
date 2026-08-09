@@ -8,3 +8,5 @@ prototype-live/
 
 # Local screenshot / verification scratch
 .shots/
+# scratch
+.commitmsg
