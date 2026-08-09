@@ -142,11 +142,11 @@ visual style and apply it consistently across every screen."*
 
 ## Battle test: what happens when you actually run this
 
-The template above was run **four more times from scratch**, each in a separate clean
-folder containing *only* BRD v1.1 and `assets/screens.css` — no example
-implementation to copy from — plus two earlier runs of the unbounded version.
+The template above was run **eight times** against BRD v1.1 - twice against the
+original wording, then **six times in separate clean folders** containing *only*
+BRD v1.1 and `assets/screens.css`, with no example implementation to copy from.
 
-### Result: 4 / 4 produced a complete, working, self-verified app
+### Result: 8 / 8 produced a complete, working, self-verified app
 
 | Run | Time | Its own browser checks |
 |---|---|---|
@@ -154,15 +154,21 @@ implementation to copy from — plus two earlier runs of the unbounded version.
 | 2 | 30 min 44 s | 101 / 101 pass |
 | 3 | 22 min 31 s | 79 / 79 pass |
 | 4 | 22 min 08 s | 82 / 82 pass |
+| 5 | 20 min 39 s | 104 / 104 pass |
+| 6 | 20 min 12 s | 79 / 79 pass |
+
+*(plus the two earlier runs against the unbounded wording, which also succeeded but
+took far longer - see below.)*
 
 Every run wrote its *own* test suite, drove a real browser, found its own defects and
-fixed them before finishing. None needed a correction from a human. All four
+fixed them before finishing. **None needed a correction from a human.** Every run
+produced exactly three files and left no scratch folders behind. All six clean-room
 transcripts, and the exact prompt used, are committed in
 [`iteration/battle-test/`](./iteration/battle-test).
 
 **The "stop once it works" line is what makes this predictable.** Without it, an
 earlier run was still polishing sub-pixel hit areas after **90 minutes**. With it,
-all four landed between 22 and 31 minutes.
+all six clean-room runs landed between **20 and 31 minutes** - mean ~23.
 
 **The "list what you decided" line works.** Run 3 finished with, unprompted:
 
@@ -184,7 +190,7 @@ That is a requirements conversation you would otherwise have had six weeks later
 
 ### What varied — expect this
 
-| | Examples across the six runs |
+| | Examples across the eight runs |
 |---|---|
 | Journey shape | 4, 5 and 6 screens; "Step N of 4" vs "Screen N of 5" |
 | Date entry | one masked field, or three separate DD / MM / YYYY boxes |
@@ -213,7 +219,7 @@ Another read *"reports can be raised without mobile signal"* in REQ-001 and put 
 - **Markup is not stable between runs.** Element IDs, control types and screen counts
   all change. Don't write automated tests against one run's markup and expect them to
   pass against the next — we tried, and a single generic test driver could not walk
-  all four builds. Test the *journey*, not the selectors.
+all six builds. Test the *journey*, not the selectors.
 
 ---
 
