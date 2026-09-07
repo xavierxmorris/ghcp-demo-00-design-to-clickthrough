@@ -26,8 +26,8 @@
 
 .PARAMETER Live
     Actually invoke Copilot CLI to rebuild the prototype from the BRD, into
-    prototype-live\. Took ~17 minutes when captured. Great for a workshop,
-    wrong for a 90-second slot.
+    prototype-live\. Took ~24 minutes when captured. Grants all tools, so use
+    a disposable clone. Appropriate for a workshop, not a 90-second slot.
 
 .PARAMETER Check
     Validate the demo assets and exit. Prints a verdict and sets the exit code.

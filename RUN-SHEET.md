@@ -13,6 +13,9 @@ who is *not* a developer.
 Presenting live? Use `.\go.ps1 -Manual` so questions can't run down the clock —
 you advance each beat with Enter.
 
+For the longer, participant-driven exercise, use [WORKSHOP.md](WORKSHOP.md).
+The replay is offline; live generation uses Copilot and network access.
+
 ---
 
 ## The one idea
@@ -60,7 +63,7 @@ The prompt appears, followed by the **measured** facts of the real run.
 The script opens **`prototype/index.html`** — *Terravale Field*. **Drive it yourself.**
 
 1. **Start hazard report**.
-2. Press **`d`** to auto-fill *(or type a real audience member's name — much better)*.
+2. Press **`d`** to auto-fill, or enter a fictional participant and example email.
 3. Clear the contact email, hit **Continue** — refused, with a specific message.
 4. Fix it, continue to **Check your report**.
 
@@ -73,9 +76,9 @@ The script opens **`prototype/index.html`** — *Terravale Field*. **Drive it yo
 > the screen* and it labels them in place. That's the acceptance criterion from
 > the document — met, and checkable by the person who wrote it."
 
-Worth landing if you have a spare breath: *works with no mobile signal, no
-sign-in on site, reaches your shift supervisor immediately* — and the tap targets
-are that big because section 6 of the BRD says **gloves and direct sunlight**.
+Worth landing if you have a spare breath: the prototype works without a network
+and shows the intended notification journey, but **no supervisor is notified**.
+The tap-target requirement comes from section 6's fictional field-use scenario.
 
 ### 0:53 — The revision *(22s)* — **the beat that proves the claim**
 **`…-brd-v1.1.html`** opens, then **`prototype-v2/index.html`**.
@@ -152,9 +155,9 @@ If you re-run either, **re-measure it** and update `$RunOne` / `$RunTwo` in
 |---|---|
 | `.\go.ps1` | Timed 90-second run. |
 | `.\go.ps1 -Manual` | **Presenting live.** Enter advances each beat. |
-| `.\go.ps1 -Check` | Pre-flight before you walk on stage. Exits 0/1, CI-safe. |
+| `.\go.ps1 -Check` | Required-asset pre-flight, not a rerun of browser assertions. |
 | `.\go.ps1 -NoBrowser` | Rehearsing the words without opening windows. |
-| `.\go.ps1 -Live` | Workshop mode — Copilot really rebuilds it into `prototype-live\`. Minutes, not seconds. Your known-good copy is never touched. |
+| `.\go.ps1 -Live` | Requests a rebuild into `prototype-live\`, with all tools allowed. Use a disposable clone: instructions do not isolate the original files. |
 
 ---
 

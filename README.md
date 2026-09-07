@@ -13,6 +13,12 @@ That's it. No install, no server, no Node, no Python, no design-tool licence, no
 network. The pages run straight off the filesystem, so this works on a
 locked-down laptop and on conference wifi that has given up.
 
+**Go deeper:** [WORKSHOP.md](WORKSHOP.md) turns the short replay into a
+45-60 minute requirements workshop: a manual acceptance matrix, conditional
+escalation cases, a change-impact exercise, and a production-readiness handoff.
+Viewing needs only a browser; `go.ps1` needs PowerShell. Live authoring needs
+Copilot access and network connectivity and is not the offline replay.
+
 ---
 
 ## The one idea
@@ -66,10 +72,10 @@ truth, and the build follows it.** Nobody writes a change request in code.
   REQ-005, holding.
 - **It says no.** A blank contact email is refused with a specific message
   (REQ-004, BR-01–BR-03). The declaration gates submission (BR-04).
-- **It reads like mining, because it is.** Raise a hazard from the pit, the
-  crusher, the workshop or the haul road. Works with no mobile signal. Reaches
-  your shift supervisor immediately. Large tap targets for gloves, high contrast
-  for direct sunlight — straight out of section 6 of the BRD.
+- **It uses a mining scenario.** The BRD describes reporting from the pit,
+  crusher, workshop, or haul road and the intended supervisor-notification
+  journey. The prototype demonstrates that journey offline; it does not
+  actually notify anyone. Large targets and contrast come from section 6.
 - **Everything is auditable.** Both Copilot runs are evidenced by full session
   transcripts in [`iteration/`](./iteration).
 
@@ -135,9 +141,9 @@ requirements into a ticket, then a ticket into code, losing intent at each hop.
 |---|---|
 | `.\go.ps1` | Timed run. |
 | `.\go.ps1 -Manual` | **Presenting live.** Enter advances each beat, so questions can't run down the clock. |
-| `.\go.ps1 -Check` | Pre-flight before you walk on stage. Exits 0/1, CI-safe. |
+| `.\go.ps1 -Check` | Checks required assets exist. Exits 0/1; it does not rerun the historical browser tests. |
 | `.\go.ps1 -NoBrowser` | Rehearsing the words without opening windows. |
-| `.\go.ps1 -Live` | Workshop mode — Copilot really rebuilds the app from the BRD into `prototype-live\`. Took ~24 minutes when captured. `prototype\` and `prototype-v2\` are never touched. |
+| `.\go.ps1 -Live` | Rebuilds with Copilot, requesting output in `prototype-live\`. Historical runs took ~24 minutes. The script allows all tools; the output instruction is not a sandbox. Use a disposable clone, or the workshop's approval-based alternative. |
 
 Full presenter script, including what to say and how to answer the awkward
 questions: **[`RUN-SHEET.md`](./RUN-SHEET.md)**.
@@ -205,7 +211,7 @@ Worth being straight about these if anyone asks — the demo is stronger for it.
 ## Presenter cheat sheet
 
 - Press **`d`** in the app to fill the form instantly if you're short on time.
-  Typing a real audience member's name is better if you have ten seconds.
+  Otherwise type a fictional name and an example email address.
 - **The browser is the star. The terminal is the autocue.** Don't demo the script.
 - **Point at the trace chips.** They're the bridge from their world to ours.
 - **Close on the document, not the code:** *"the analyst changed the BRD, and the
